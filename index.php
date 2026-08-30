@@ -22,7 +22,7 @@ $PAGE = [
   'description' => 'Bespoke catering trailers built in the North West, plus repairs, chassis work and refits on any trailer. Gas Safe and electrical certificates supplied. Get a quote today.',
   'path'        => '/',
   'nav'         => '',
-  'hero_scrub'  => true,
+  'hero_scrub'  => false,   // static hero, no scroll film
   'og_image'    => '/assets/img/og-default.jpg',
   'schema'      => [
     schema_faq($FAQ),
@@ -38,89 +38,43 @@ require __DIR__ . '/inc/header.php';
 ?>
 
 <!-- ═══ HERO ═══════════════════════════════════════════════════════════ -->
+<!--
+  A single static hero on every device. The scroll-scrubbed film was
+  replaced on request. Its engine still lives in assets/js/hero.js and the
+  footage is kept in review/, so it can be brought back by setting
+  'hero_scrub' => true and restoring the markup from git history.
+-->
+<section class="hero--still" aria-label="Introduction">
+  <div class="hero--still__img" aria-hidden="true"></div>
+  <div class="hero--still__scrim" aria-hidden="true"></div>
 
-<!-- Desktop: the film plays as you scroll. -->
-<section class="hero hero--scrub" aria-label="Introduction">
-  <div class="hero__pin" id="heroPin">
-    <div class="hero__stage" id="stage"
-         data-video="/assets/video/hero-scrub.mp4"
-         data-poster="/assets/img/hero/hero-poster.webp"
-         data-poster-fallback="/assets/img/hero/hero-poster.jpg"
-         data-bytes="1981050">
+  <div class="hero--still__body">
+    <div class="wrap">
+      <p class="kicker">Built in the North West</p>
+      <h1>Bespoke Catering Trailers Built in the North West</h1>
+      <p class="hero--still__lede">
+        Built to your menu, not off a shelf. New builds, repairs and refits for
+        street food traders, burger vans and coffee trailers.
+      </p>
 
-      <div class="hero__poster" id="heroPoster" aria-hidden="true"></div>
-      <video class="hero__video" id="heroVideo" preload="none" muted playsinline
-             aria-hidden="true" tabindex="-1"></video>
-      <div class="hero__scrim" aria-hidden="true"></div>
-
-      <div class="hero__bands">
-
-        <!-- The page's single <h1> lives in the static hero below, which is the
-             version Google indexes on mobile. This is the same words for desktop
-             visitors, marked as a level-one heading for assistive tech without
-             putting a second <h1> element in the document. -->
-        <div class="cap" data-a="0" data-b="0.20">
-          <div class="cap__in">
-            <p class="cap-h1" role="heading" aria-level="1" data-split="word">Bespoke Catering Trailers Built in the North West</p>
-          </div>
-        </div>
-
-        <div class="cap" data-a="0.24" data-b="0.46">
-          <div class="cap__in">
-            <h2 data-split="grid">Built to your menu. Not off a shelf.</h2>
-          </div>
-        </div>
-
-        <div class="cap cap--wide" data-a="0.50" data-b="0.72" data-ramp="0.036">
-          <div class="cap__in">
-            <h2 data-split="word">Gas Safe and electrical certificates handed over with the keys.</h2>
-          </div>
-        </div>
-
-        <div class="cap" data-a="0.76" data-b="1">
-          <div class="cap__in">
-            <h2 data-split="word">Ready to trade the day you collect it.</h2>
-            <p>Trailers, repairs and refits for street food traders across the North West.</p>
-            <div class="btn-row">
-              <a class="btn btn--accent btn--lg" href="/request-a-quote">Request a Quote</a>
-              <a class="btn btn--ghost btn--lg" href="<?= e(tel_href()) ?>" data-track="call-hero">
-                Call <?= e($CFG['phone_display']) ?>
-              </a>
-            </div>
-          </div>
-        </div>
-
+      <div class="btn-row">
+        <a class="btn btn--accent btn--lg" href="/request-a-quote">Request a Quote</a>
+        <a class="btn btn--ghost btn--lg" href="<?= e(tel_href()) ?>" data-track="call-hero">
+          Call <?= e($CFG['phone_display']) ?>
+        </a>
+        <a class="btn btn--wa btn--lg" href="<?= e(whatsapp_href()) ?>" target="_blank" rel="noopener">
+          WhatsApp
+        </a>
       </div>
 
-      <svg class="ring" id="heroRing" viewBox="0 0 48 48" aria-hidden="true">
-        <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" stroke-width="3"
-                stroke-dasharray="126" style="stroke-dashoffset:var(--ld,126)"/>
-      </svg>
-
-      <div class="hero__cue" id="heroCue" hidden>
-        <svg viewBox="0 0 15 22" aria-hidden="true"><rect x="1" y="1" width="13" height="20" rx="6.5"/><path d="M7.5 6v4"/></svg>
-        Scroll
-      </div>
-
+      <ul class="hero--still__proof">
+        <li>Gas Safe and electrical certificates handed over with the keys</li>
+        <li><?= e($CFG['chassis_warranty']) ?> anti corrosion chassis warranty</li>
+        <li>Ready to trade the day you collect it</li>
+      </ul>
     </div>
   </div>
 </section>
-
-<!-- Phones, portrait tablets and reduced motion: a composed still. -->
-<section class="hero--static" aria-label="Introduction">
-  <div class="hero__poster hero__poster--ending" aria-hidden="true"></div>
-  <div class="hero__scrim" aria-hidden="true"></div>
-  <div class="hero__body">
-    <h1>Bespoke Catering Trailers Built in the North West</h1>
-    <p>New builds, repairs and refits for street food traders, burger vans and coffee
-       trailers. Gas Safe and electrical certificates handed over with the keys.</p>
-    <div class="btn-row">
-      <a class="btn btn--accent btn--lg" href="/request-a-quote">Request a Quote</a>
-      <a class="btn btn--ghost btn--lg" href="<?= e(tel_href()) ?>">Call us</a>
-    </div>
-  </div>
-</section>
-
 
 <!-- ═══ TRUST STRIP ════════════════════════════════════════════════════ -->
 <section class="trust" aria-label="Why traders use us">

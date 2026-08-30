@@ -215,128 +215,88 @@ section{position:relative}
   .tel svg{width:19px;height:19px}
 }
 
-/* ---------- the scrub hero --------------------------------------------- */
-.hero{position:relative}
-.hero__pin{height:560vh}   /* scroll distance per beat, set by the flick test */
-.hero__stage{
-  position:sticky;top:0;height:100svh;overflow:hidden;
+/* ---------- the static hero --------------------------------------------- */
+/* One image on every device. Sized in svh so mobile browser chrome does not
+   crop it, with a ceiling in px so it never towers on a large monitor. */
+.hero--still{
+  position:relative;
+  display:flex;align-items:flex-end;
+  min-height:min(86svh,760px);
+  padding-block:clamp(3rem,9vw,6rem) clamp(2.4rem,6vw,4.5rem);
+  overflow:hidden;
   background:var(--canvas-deep);
+  isolation:isolate;
 }
-.hero__poster,.hero__video{
-  position:absolute;inset:0;width:100%;height:100%;
-  object-fit:cover;
+.hero--still__img{
+  position:absolute;inset:0;z-index:-2;
+  background-position:center 42%;background-size:cover;background-repeat:no-repeat;
+  background-image:url('/assets/img/hero/hero-poster.jpg');
 }
-.hero__poster{background-size:cover;background-position:center;transition:opacity .7s var(--ease)}
-/* The phone hero uses the opening frame, not the settle frame: the whole
-   trailer with its hatch open says more in one still than the interior does.
-   Plain url first so anything without image-set() still gets a poster. */
-.hero__poster--ending{background-image:url('/assets/img/hero/hero-poster.jpg')}
-.hero__poster--ending{background-image:-webkit-image-set(
+.hero--still__img{background-image:-webkit-image-set(
     url('/assets/img/hero/hero-poster.webp') type('image/webp'),
     url('/assets/img/hero/hero-poster.jpg')  type('image/jpeg'))}
-.hero__poster--ending{background-image:image-set(
+.hero--still__img{background-image:image-set(
     url('/assets/img/hero/hero-poster.webp') type('image/webp'),
     url('/assets/img/hero/hero-poster.jpg')  type('image/jpeg'))}
-.hero__video{opacity:0;transition:opacity .7s var(--ease);will-change:transform;transform:translateZ(0)}
-.hero__stage.video-ready .hero__video{opacity:1}
-.hero__stage.video-ready .hero__poster{opacity:0}
-.hero__stage.video-failed .hero__video{display:none}
 
-/* global base scrim so no frame is ever raw behind the page */
-.hero__scrim{
-  position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(ellipse 122% 92% at 50% 46%,rgba(7,19,32,0) 34%,rgba(7,19,32,.64) 100%);
-}
-/* the caption lane is the dark workshop on the left, so weight the scrim there */
-.hero__scrim::after{
-  content:"";position:absolute;inset:0;
-  background:linear-gradient(100deg,rgba(7,19,32,.86) 0%,rgba(7,19,32,.76) 26%,
-                                    rgba(7,19,32,.54) 48%,rgba(7,19,32,0) 72%);
+/* Two scrims: one overall so no part of the photograph is ever raw behind
+   the page, one weighted to the left where the words actually sit. */
+.hero--still__scrim{
+  position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:
+    linear-gradient(to top,rgba(5,12,20,.94) 0%,rgba(5,12,20,.72) 34%,
+                            rgba(5,12,20,.30) 66%,rgba(5,12,20,.10) 100%),
+    linear-gradient(100deg,rgba(7,19,32,.86) 0%,rgba(7,19,32,.62) 34%,
+                            rgba(7,19,32,.18) 58%,rgba(7,19,32,0) 78%);
 }
 
-.hero__bands{position:absolute;inset:0;display:grid;align-items:center}
-.cap{
-  grid-area:1/1;position:relative;
-  width:min(var(--wrap),100% - var(--gut)*2);margin-inline:auto;
-  opacity:0;pointer-events:none;text-shadow:var(--tshadow);
+.hero--still__body{position:relative;width:100%}
+.hero--still h1{max-width:17ch;margin:0 0 .7rem;text-shadow:var(--tshadow)}
+.hero--still__lede{
+  max-width:46ch;margin:0 0 1.8rem;
+  font-size:clamp(1.04rem,.99rem + .42vw,1.28rem);
+  color:#DCE6F0;text-shadow:var(--tshadow);
 }
-.cap.is-live{pointer-events:auto}
-/* The container is capped in px. A `ch` here would resolve against the body
-   font, not the display face inside it, and the headline breaks to seven lines.
-   The ch caps belong on the text elements themselves, below. */
-.cap__in{max-width:min(640px,50vw)}
-.cap--wide .cap__in{max-width:min(760px,58vw)}
-/* per-band scrim, deepens with the band's own progress, dies out by 76% */
-.cap::before{
-  content:"";position:absolute;inset:-20% -10% -20% -30%;pointer-events:none;z-index:-1;
-  opacity:calc(.32 + .68*var(--k,1));
-  background:radial-gradient(ellipse 86% 72% at 32% 50%,
-             rgba(5,12,20,.83) 0%,rgba(5,12,20,.66) 44%,rgba(5,12,20,0) 80%);
+/* Small text over a photograph needs more than the steel grey used on solid
+   panels. Measured at 1.01:1 in --steel. Raising the colour alone still left
+   it at 2.08:1 on desktop, where the image is brightest behind it, so this
+   label gets a chip: a small blurred backing pill rather than a bigger scrim
+   over the whole hero. */
+.hero--still .kicker{
+  display:inline-flex;width:auto;
+  margin-bottom:1.4rem;padding:.5rem .9rem .5rem .75rem;
+  border-radius:999px;
+  background:rgba(8,16,26,.66);
+  border:1px solid rgba(143,163,184,.3);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:#EAF1F8;text-shadow:0 1px 3px rgba(5,12,20,.9);
 }
-.cap h1,.cap h2,.cap .cap-h1{margin:0 0 .55rem}
-/* the desktop hero title is a <p> so the document keeps a single <h1>;
-   it must still render as the h1 it stands in for */
-/* Two classes, so this beats `.cap p` (0,1,1). With a single class the
-   paragraph rule won and the hero headline rendered at body size. */
-.cap .cap-h1{font-family:var(--display);font-weight:800;line-height:1.04;
-        letter-spacing:-.022em;text-wrap:balance;color:var(--text-primary);
-        max-width:16ch;
-        font-size:clamp(2.3rem,1.4rem + 4.1vw,4.35rem)}
-/* ch on the element, where it resolves in the display face it is set in */
-.cap h2{max-width:15ch}
-.cap--wide h2{max-width:21ch}
-.cap p{color:#DCE6F0;font-size:clamp(1.02rem,.98rem + .35vw,1.2rem);max-width:34ch}
-.cap .btn-row{margin-top:1.5rem}
+.hero--still .btn{text-shadow:none}
 
-/* split-text spans, driven by --k */
-.w{display:inline-block;white-space:pre}
-.c{display:inline-block;will-change:transform,opacity}
-
-.hero__cue{
-  position:absolute;left:50%;bottom:1.8rem;transform:translateX(-50%);
-  display:grid;justify-items:center;gap:.5rem;
-  font:500 .68rem/1 var(--mono);letter-spacing:.19em;text-transform:uppercase;
-  color:var(--steel);pointer-events:none;
+.hero--still__proof{
+  list-style:none;margin:2.4rem 0 0;padding:0;
+  display:flex;flex-wrap:wrap;gap:.7rem 2rem;
 }
-.hero__cue svg{width:15px;height:22px;stroke:var(--steel);fill:none;stroke-width:1.5;
-               animation:cue 2.6s var(--ease) infinite}
-/* a class with display beats the UA [hidden] rule, so restate it. Without this
-   the cue shows over the settle frame even though the markup hides it. */
-.hero__cue[hidden]{display:none}
-@keyframes cue{0%,100%{transform:translateY(0);opacity:.55}50%{transform:translateY(5px);opacity:1}}
-
-.ring{position:absolute;right:1.6rem;bottom:1.6rem;width:44px;height:44px;color:var(--steel);
-      transform:rotate(-90deg);opacity:.85}
-.hero__stage.video-ready .ring,.hero__stage.video-failed .ring{opacity:0;transition:opacity .5s}
-
-/* the static hero: a designed layout, not an apology */
-.hero--static{display:none;position:relative;min-height:min(74svh,620px);
-              display:none;align-items:flex-end;overflow:hidden}
-.hero--static .hero__poster{position:absolute}
-.hero--static .hero__scrim::before{
-  content:"";position:absolute;inset:0;
-  background:linear-gradient(to top,rgba(5,12,20,.92) 0%,rgba(5,12,20,.78) 34%,
-                                    rgba(5,12,20,.44) 62%,rgba(5,12,20,.08) 100%);
+.hero--still__proof li{
+  position:relative;padding-left:1.5rem;
+  font-size:.95rem;color:#E4EDF5;text-shadow:0 1px 4px rgba(5,12,20,.95);
 }
-.hero--static .hero__body{position:relative;padding-block:clamp(3rem,10vw,5.5rem);
-                          width:min(var(--wrap),100% - var(--gut)*2);margin-inline:auto}
-.hero--static h1{text-shadow:var(--tshadow);max-width:15ch}
-.hero--static p{color:#DCE6F0;max-width:40ch;text-shadow:var(--tshadow)}
-.hero--static .btn-row{margin-top:1.6rem}
-
-/* THE FIVE STATIC-HERO GATES. These five queries must match the JS list
-   character for character, or one side loads what the other side hides. */
-@media (max-width:720px),
-       (orientation:portrait) and (max-width:1024px),
-       (orientation:portrait) and (pointer:coarse),
-       (orientation:landscape) and (pointer:coarse) and (max-height:560px),
-       (prefers-reduced-motion:reduce){
-  .hero--scrub{display:none}
-  .hero--static{display:flex}
+.hero--still__proof li::before{
+  content:"";position:absolute;left:0;top:.44em;
+  width:9px;height:9px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 0 3px var(--accent-muted);
 }
-
-/* short desktop windows keep the scrub but lose the small overlays */
-@media (max-height:560px){.hero__cue{display:none}}
+@media (max-width:600px){
+  .hero--still{min-height:min(78svh,640px)}
+  .hero--still__proof{gap:.55rem;flex-direction:column}
+  .hero--still__scrim{
+    background:
+      linear-gradient(to top,rgba(5,12,20,.96) 0%,rgba(5,12,20,.88) 46%,
+                              rgba(5,12,20,.62) 78%,rgba(5,12,20,.34) 100%),
+      linear-gradient(100deg,rgba(7,19,32,.72) 0%,rgba(7,19,32,.52) 46%,
+                              rgba(7,19,32,.22) 78%,rgba(7,19,32,0) 100%);
+  }
+}
 
 /* ---------- trust strip ------------------------------------------------- */
 .trust{border-block:1px solid var(--hairline);background:var(--canvas-deep)}
