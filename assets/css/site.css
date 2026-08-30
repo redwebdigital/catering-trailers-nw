@@ -286,17 +286,59 @@ section{position:relative}
   width:9px;height:9px;border-radius:50%;
   background:var(--accent);box-shadow:0 0 0 3px var(--accent-muted);
 }
-@media (max-width:600px){
-  .hero--still{min-height:min(78svh,640px)}
-  .hero--still__proof{gap:.55rem;flex-direction:column}
-  .hero--still__scrim{
-    background:
-      linear-gradient(to top,rgba(5,12,20,.96) 0%,rgba(5,12,20,.88) 46%,
-                              rgba(5,12,20,.62) 78%,rgba(5,12,20,.34) 100%),
-      linear-gradient(100deg,rgba(7,19,32,.72) 0%,rgba(7,19,32,.52) 46%,
-                              rgba(7,19,32,.22) 78%,rgba(7,19,32,0) 100%);
+/* On a phone, stop putting text over the photograph.
+   Overlaying it meant a scrim heavy enough to keep the words legible, which
+   buried the picture. Stacking gives a clean, fully visible photo AND text at
+   full contrast on the canvas, with no scrim needed and no compromise either way. */
+@media (max-width:760px){
+  .hero--still{
+    display:block;
+    min-height:0;
+    padding:0;
   }
+
+  /* the image comes out of the background and into the flow */
+  .hero--still__img{
+    position:relative;
+    inset:auto;
+    width:100%;
+    aspect-ratio:16/10;
+    background-position:center 46%;
+  }
+  /* a short fade at the foot so the photo melts into the canvas below it */
+  .hero--still__img::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:26%;
+    background:linear-gradient(to top,var(--canvas),rgba(11,26,43,0));
+  }
+
+  /* no text sits on the picture any more, so no scrim at all */
+  .hero--still__scrim{display:none}
+
+  .hero--still__body{
+    padding:1.6rem 0 2.6rem;
+    background:var(--canvas);
+  }
+
+  /* shadows existed to survive the photograph; on solid canvas they only muddy */
+  .hero--still h1,
+  .hero--still__lede,
+  .hero--still__proof li{text-shadow:none}
+  .hero--still h1{max-width:none}
+  .hero--still__lede{max-width:none;color:var(--text-secondary)}
+
+  .hero--still .kicker{
+    background:none;border:0;backdrop-filter:none;-webkit-backdrop-filter:none;
+    padding:0;margin-bottom:1rem;color:var(--steel);text-shadow:none;
+  }
+
+  .hero--still__proof{gap:.55rem;flex-direction:column;margin-top:1.8rem}
+  .hero--still__proof li{color:var(--text-secondary)}
+
+  /* full-width buttons are easier to hit than a wrapped row */
+  .hero--still .btn-row{flex-direction:column;align-items:stretch;gap:.6rem}
+  .hero--still .btn-row .btn{width:100%}
 }
+
 
 /* ---------- trust strip ------------------------------------------------- */
 .trust{border-block:1px solid var(--hairline);background:var(--canvas-deep)}

@@ -36,9 +36,14 @@ DirectorySlash Off
   RewriteRule ^blog/?$  /blog/index.php  [L]
   RewriteRule ^areas/?$ /areas/index.php [L]
 
-  # send /page.php to /page so only one URL is ever indexed
+  # Send /page.php to /page so only one URL is ever indexed.
+  # GET only: a 301 on a POST makes the browser re-send it as a GET and drop the
+  # body, which silently swallowed every quote enquiry. Form posts must never be
+  # redirected.
+  RewriteCond %{REQUEST_METHOD} =GET
   RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
   RewriteCond %{REQUEST_URI} !^/sitemap\.php$
+  RewriteCond %{REQUEST_URI} !^/quote-handler\.php$
   RewriteRule ^ /%1 [R=301,L]
 
   # ...then serve /page from page.php internally
