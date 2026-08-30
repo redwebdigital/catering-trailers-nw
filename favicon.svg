@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="10" fill="#0B1A2B"/>
+  <!-- the red arc from the logo -->
+  <path d="M14 40a19 19 0 0 1 36-9" fill="none" stroke="#DE000F" stroke-width="4" stroke-linecap="round"/>
+  <!-- trailer body -->
+  <rect x="16" y="24" width="32" height="17" rx="3.5" fill="#F4F7FA"/>
+  <!-- serving hatch -->
+  <path d="M22 30h14v6H22z" fill="#0B1A2B"/>
+  <!-- chassis and drawbar -->
+  <path d="M16 41h32M16 41l-6 3" stroke="#F4F7FA" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+  <!-- wheels -->
+  <circle cx="27" cy="45" r="4" fill="#0B1A2B" stroke="#F4F7FA" stroke-width="2.4"/>
+  <circle cx="40" cy="45" r="4" fill="#0B1A2B" stroke="#F4F7FA" stroke-width="2.4"/>
+</svg>

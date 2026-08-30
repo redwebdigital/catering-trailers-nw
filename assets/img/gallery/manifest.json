@@ -1,0 +1,160 @@
+[
+  {
+    "slug": "catering-trailer-serving-hatch-open",
+    "alt": "White catering trailer with the serving hatch raised, showing the counter and interior",
+    "native": [
+      1448,
+      1086
+    ],
+    "sizes": [
+      [
+        480,
+        360
+      ],
+      [
+        800,
+        600
+      ],
+      [
+        1200,
+        900
+      ]
+    ]
+  },
+  {
+    "slug": "catering-trailer-serving-side",
+    "alt": "Front three quarter view of a white catering trailer showing the serving hatch and gas locker",
+    "native": [
+      1599,
+      1199
+    ],
+    "sizes": [
+      [
+        480,
+        360
+      ],
+      [
+        800,
+        600
+      ],
+      [
+        1200,
+        900
+      ]
+    ]
+  },
+  {
+    "slug": "catering-trailer-front-three-quarter",
+    "alt": "Front three quarter view of a white catering trailer with the A frame, jockey wheel and gas locker",
+    "native": [
+      1599,
+      1199
+    ],
+    "sizes": [
+      [
+        480,
+        360
+      ],
+      [
+        800,
+        600
+      ],
+      [
+        1200,
+        900
+      ]
+    ]
+  },
+  {
+    "slug": "catering-trailer-side-elevation",
+    "alt": "Full side elevation of a white single axle catering trailer",
+    "native": [
+      1600,
+      1200
+    ],
+    "sizes": [
+      [
+        480,
+        360
+      ],
+      [
+        800,
+        600
+      ],
+      [
+        1200,
+        900
+      ],
+      [
+        1600,
+        1200
+      ]
+    ]
+  },
+  {
+    "slug": "catering-trailer-rear-three-quarter",
+    "alt": "Rear three quarter view of a white catering trailer showing the closed serving window",
+    "native": [
+      1200,
+      1600
+    ],
+    "sizes": [
+      [
+        480,
+        640
+      ],
+      [
+        800,
+        1067
+      ],
+      [
+        1200,
+        1600
+      ]
+    ]
+  },
+  {
+    "slug": "catering-trailer-hitched-rear",
+    "alt": "White catering trailer hitched to a tow vehicle, rear three quarter view",
+    "native": [
+      1599,
+      1199
+    ],
+    "sizes": [
+      [
+        480,
+        360
+      ],
+      [
+        800,
+        600
+      ],
+      [
+        1200,
+        900
+      ]
+    ]
+  },
+  {
+    "slug": "catering-trailer-rear-door",
+    "alt": "Rear of a white catering trailer showing the personnel door and road lights",
+    "native": [
+      1200,
+      1600
+    ],
+    "sizes": [
+      [
+        480,
+        640
+      ],
+      [
+        800,
+        1067
+      ],
+      [
+        1200,
+        1600
+      ]
+    ]
+  }
+]

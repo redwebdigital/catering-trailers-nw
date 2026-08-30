@@ -1,0 +1,14 @@
+# never ship raws, reviews, or local junk
+/review/
+*.raw.mp4
+.DS_Store
+Thumbs.db
+node_modules/
+.env
+.env.*
+!.env.example
+
+# PHP form handler runtime
+/quote-uploads/*
+!/quote-uploads/.gitkeep
+/logs/

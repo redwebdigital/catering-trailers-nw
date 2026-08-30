@@ -1,0 +1,8 @@
+# Normalise to LF in the repo. Hostinger is Linux; mixed endings cause noisy diffs.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.webp binary
+*.mp4 binary
+*.ico binary

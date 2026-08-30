@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Nothing useful for a crawler, and nothing that should ever be indexed.
+Disallow: /inc/
+Disallow: /quote-uploads/
+Disallow: /request-a-quote?
+Disallow: /*?len=
+Disallow: /thank-you
+
+Sitemap: https://cateringtrailersnw.co.uk/sitemap.xml

@@ -1,0 +1,118 @@
+# =========================================================================
+#  Catering Trailers NW — Apache config for Hostinger shared hosting.
+#  Clean URLs, HTTPS, compression, caching, and a locked-down includes dir.
+# =========================================================================
+
+Options -Indexes -MultiViews
+DirectoryIndex index.php index.html
+
+# Without this, Apache 301s /blog to /blog/ and we end up with two URLs for
+# one page. The explicit rewrites below serve the directory indexes instead.
+DirectorySlash Off
+
+# ---- HTTPS and canonical host ------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # force HTTPS
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+  # force the www-less host, so one canonical version is indexed
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+
+  # strip a trailing slash (except on the site root)
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.+)/$ /$1 [R=301,L]
+
+  # the sitemap is generated, but must be served at the conventional address
+  RewriteRule ^sitemap\.xml$ /sitemap.php [L]
+
+  # /blog and /areas are real directories holding their own children, so the
+  # generic "not a directory" rule below deliberately skips them. Map them
+  # explicitly, and keep the canonical URL slash-free.
+  RewriteRule ^blog/?$  /blog/index.php  [L]
+  RewriteRule ^areas/?$ /areas/index.php [L]
+
+  # send /page.php to /page so only one URL is ever indexed
+  RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+  RewriteCond %{REQUEST_URI} !^/sitemap\.php$
+  RewriteRule ^ /%1 [R=301,L]
+
+  # ...then serve /page from page.php internally
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{DOCUMENT_ROOT}/$1.php -f
+  RewriteRule ^(.+?)/?$ /$1.php [L]
+</IfModule>
+
+# ---- Keep the internals private ----------------------------------------
+RedirectMatch 404 ^/inc/
+RedirectMatch 404 ^/quote-uploads/
+RedirectMatch 404 (?i)/\.(git|env)
+
+<FilesMatch "\.(md|json|log|sql|ini|bak|dist)$">
+  Require all denied
+</FilesMatch>
+<Files "composer.json">
+  Require all denied
+</Files>
+
+# ---- Security headers ---------------------------------------------------
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+
+  # Google Fonts is the only external origin the site uses.
+  Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; media-src 'self' blob:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+
+  # the hero video is fetched as a Blob, so it must not be cached stale
+  <FilesMatch "\.(mp4)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+</IfModule>
+
+# ---- Compression --------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+  AddOutputFilterByType DEFLATE application/javascript application/x-javascript
+  AddOutputFilterByType DEFLATE application/json application/xml
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ---- Caching ------------------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault                              "access plus 1 month"
+  ExpiresByType text/html                     "access plus 0 seconds"
+  ExpiresByType text/css                      "access plus 1 year"
+  ExpiresByType application/javascript        "access plus 1 year"
+  ExpiresByType image/webp                    "access plus 1 year"
+  ExpiresByType image/jpeg                    "access plus 1 year"
+  ExpiresByType image/png                     "access plus 1 year"
+  ExpiresByType image/svg+xml                 "access plus 1 year"
+  ExpiresByType video/mp4                     "access plus 1 month"
+  ExpiresByType application/xml               "access plus 1 day"
+</IfModule>
+
+# ---- MIME ---------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType image/webp .webp
+  AddType image/svg+xml .svg
+  AddType video/mp4 .mp4
+  AddType application/manifest+json .webmanifest
+</IfModule>
+
+# ---- Uploads ------------------------------------------------------------
+<IfModule mod_php.c>
+  php_value upload_max_filesize 8M
+  php_value post_max_size 56M
+  php_value max_file_uploads 6
+</IfModule>
+
+ErrorDocument 404 /404.php
