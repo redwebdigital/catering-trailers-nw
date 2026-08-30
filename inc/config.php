@@ -31,6 +31,12 @@ return [
     // Where quote enquiries are delivered. Can differ from the public address.
     'enquiry_inbox' => 'enquiries@cateringtrailersnw.co.uk',
 
+    // The address the quote form sends FROM (the envelope sender). This mailbox
+    // must actually exist on the hosting, or some mail servers reject the
+    // message. The customer's own address goes in Reply-To, so hitting reply
+    // still answers them, not this inbox.
+    'mail_from' => 'enquiries@cateringtrailersnw.co.uk',
+
     // ── Address ──────────────────────────────────────────────────────────
     // [PLACEHOLDER] replace with the real workshop address.
     'address' => [

@@ -222,10 +222,11 @@ $to        = $CFG['enquiry_inbox'];
 $subjectRaw = 'Quote enquiry: ' . ($jobType ?: 'trailer') . ' - ' . $name;
 $subject   = '=?UTF-8?B?' . base64_encode(headerSafe($subjectRaw)) . '?=';
 
-// The envelope sender must be a mailbox on this domain or the host will refuse
-// it. The customer's own address rides in Reply-To, which is what "reply"
-// should actually use.
-$fromMailbox = 'website@' . $CFG['domain'];
+// The envelope sender must be a real mailbox on this domain or the host will
+// refuse it. Set in config as 'mail_from'. The customer's own address rides in
+// Reply-To, which is what "reply" should actually use, so sending from the same
+// inbox it is delivered to does not get in the way of answering anyone.
+$fromMailbox = $CFG['mail_from'] ?? ('enquiries@' . $CFG['domain']);
 $boundary    = 'ctnw' . bin2hex(random_bytes(12));
 
 $headers = [

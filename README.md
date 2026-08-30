@@ -16,6 +16,7 @@ and the search-engine schema.
 | `phone_display` / `phone_e164` | Your number, twice. Display version and the `+44...` version for click-to-call. |
 | `whatsapp` | International format, no `+` and no spaces, e.g. `447700900123`. |
 | `email` / `enquiry_inbox` | Public address, and where quote enquiries are delivered. |
+| `mail_from` | The address the quote form sends from. Must be a real mailbox on the hosting. |
 | `address` / `geo` | Workshop address and coordinates. Both appear in the local search schema. |
 | `company_number` / `vat_number` | Leave empty to hide them from the footer. |
 | `hours` / `hours_display` | Opening hours. The first drives schema, the second is what visitors read. |
@@ -34,7 +35,7 @@ Two other things need a human:
 ## Layout
 
 ```
-index.php                     home, with the scroll-scrubbed hero
+index.php                     home, with the static image hero
 new-catering-trailers.php     ·
 catering-trailer-repairs.php  · service pages
 refurbishments-upgrades.php   ·
@@ -57,11 +58,11 @@ inc/post-top.php  post-bottom.php   article wrapper
 inc/area-page.php             area page renderer
 
 assets/css/site.css           one stylesheet
-assets/js/hero.js             the scroll-scrub engine
+assets/js/hero.js             the old scroll-scrub engine, kept but NOT loaded
 assets/js/site.js             nav, entrances, spec builder
 assets/js/quote-form.js       the multi-step form
 assets/img/gallery/           trailer photos, WebP + JPEG at several widths
-assets/video/hero-scrub.mp4   the hero film
+assets/img/hero/              hero image, WebP + JPEG
 ```
 
 ---
@@ -115,9 +116,10 @@ manager.
 - Set PHP to 8.1 or newer in hPanel.
 - Confirm `quote-uploads/` and `logs/` exist and are writable (`755`). Both carry
   their own `.htaccess` denying web access, and the handler recreates them if missing.
-- Send a real test enquiry and check it arrives. If mail does not arrive, create
-  the mailbox `website@cateringtrailersnw.co.uk` in hPanel, because that is the
-  envelope sender and some hosts reject mail from an address that does not exist.
+- Create the mailbox **`enquiries@cateringtrailersnw.co.uk`** in hPanel. The quote
+  form both sends from and delivers to it (`mail_from` and `enquiry_inbox` in
+  `inc/config.php`), and some mail servers reject a message whose sender address
+  does not exist. Then send a real test enquiry and check it arrives.
 - Submit `https://cateringtrailersnw.co.uk/sitemap.xml` to Google Search Console.
 
 ---
@@ -141,15 +143,16 @@ email, and `php_flag engine off` in the uploads directory.
 ## Testing
 
 `review/` sits outside this folder and never deploys. It holds the raw generated
-footage, the source photographs, and the test harnesses:
+footage, the source photographs, the encoded hero film (`hero-scrub-ENCODED.mp4`,
+kept in case the scroll hero is ever wanted back), and the test harnesses:
 
 ```bash
 # serve locally (the built-in server needs the router, it ignores .htaccess)
 php -S 127.0.0.1:8321 -t site review/router.php
 
 # then, with Chrome running headless on port 9222
-node review/cdp-test.mjs      # 32 checks: scrub, flick test, gates, SEO, a11y
-node review/legibility.mjs    # worst-frame contrast under every hero caption
+node review/cdp-test.mjs      # 31 checks: hero, spec builder, SEO, a11y, layout
+node review/legibility.mjs    # contrast of every piece of text over the hero image
 node review/form-test.mjs     # walks the five-step form
 node review/spec-test.mjs     # the spec builder
 ```
