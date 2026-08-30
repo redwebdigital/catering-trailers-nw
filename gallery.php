@@ -10,6 +10,8 @@ require_once __DIR__ . '/inc/bootstrap.php';
  * Nothing else needs changing.
  */
 $BUILDS = [
+  ['catering-trailer-interior-swirl-stainless', 'Brand new interior with swirl finish stainless steel walls, extraction canopy and counter run', 'Swirl stainless', 'Interior fit-out'],
+  ['catering-trailer-new-build-workshop', 'A finished catering trailer in the workshop with its serving hatch raised', 'New build', 'In the workshop'],
   ['catering-trailer-serving-hatch-open', 'Serving hatch raised on its gas struts, counter and interior visible', '3.0m body', 'Single axle'],
   ['catering-trailer-serving-side',       'Serving side of a white catering trailer with the hatch closed',        '3.0m body', 'Serving side'],
   ['catering-trailer-front-three-quarter','Front three quarter view showing the A frame, jockey wheel and gas locker', '3.0m body', 'A frame and gas locker'],

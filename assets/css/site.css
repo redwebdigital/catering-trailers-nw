@@ -250,8 +250,8 @@ section{position:relative}
 /* the caption lane is the dark workshop on the left, so weight the scrim there */
 .hero__scrim::after{
   content:"";position:absolute;inset:0;
-  background:linear-gradient(100deg,rgba(7,19,32,.80) 0%,rgba(7,19,32,.68) 26%,
-                                    rgba(7,19,32,.44) 48%,rgba(7,19,32,0) 70%);
+  background:linear-gradient(100deg,rgba(7,19,32,.86) 0%,rgba(7,19,32,.76) 26%,
+                                    rgba(7,19,32,.54) 48%,rgba(7,19,32,0) 72%);
 }
 
 .hero__bands{position:absolute;inset:0;display:grid;align-items:center}

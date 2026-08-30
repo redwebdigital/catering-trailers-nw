@@ -48,10 +48,13 @@ require __DIR__ . '/inc/header.php';
 
 <section class="band--tight">
   <div class="wrap rise">
-    <?= picture('catering-trailer-serving-hatch-open',
-        'Bespoke catering trailer with the serving hatch raised, showing the counter',
-        ['widths'=>[480,800,1200],'sizes'=>'100vw','eager'=>true,'ratio'=>'16/9',
-         'class'=>'']) ?>
+    <?= picture('catering-trailer-interior-swirl-stainless',
+        'Brand new catering trailer interior with swirl finish stainless steel walls, extraction canopy and stainless counter run',
+        ['widths'=>[480,800,1200],'sizes'=>'100vw','eager'=>true,'ratio'=>'16/9']) ?>
+    <p style="margin-top:.9rem;font:500 .74rem/1.5 var(--mono);letter-spacing:.06em;color:var(--steel)">
+      Swirl finish stainless throughout. Wipes clean, hides day to day marking,
+      and it is what makes a trailer look worth what you paid for it.
+    </p>
   </div>
 </section>
 
