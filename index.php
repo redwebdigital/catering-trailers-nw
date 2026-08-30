@@ -23,7 +23,7 @@ $PAGE = [
   'path'        => '/',
   'nav'         => '',
   'hero_scrub'  => true,
-  'og_image'    => '/assets/img/hero/hero-ending.jpg',
+  'og_image'    => '/assets/img/og-default.jpg',
   'schema'      => [
     schema_faq($FAQ),
     schema_service(
@@ -46,7 +46,7 @@ require __DIR__ . '/inc/header.php';
          data-video="/assets/video/hero-scrub.mp4"
          data-poster="/assets/img/hero/hero-poster.webp"
          data-poster-fallback="/assets/img/hero/hero-poster.jpg"
-         data-bytes="2153390">
+         data-bytes="2179207">
 
       <div class="hero__poster" id="heroPoster" aria-hidden="true"></div>
       <video class="hero__video" id="heroVideo" preload="none" muted playsinline
