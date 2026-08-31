@@ -32,8 +32,7 @@ $addressLine = trim($a['street'] . ', ' . $a['locality'] . ', ' . $a['postcode']
 
       <div class="foot__brand">
         <picture><source srcset="/assets/img/logo.webp" type="image/webp"><img src="/assets/img/logo.png" alt="<?= e($CFG['name']) ?>" width="210" height="40" loading="lazy" decoding="async"></picture>
-        <p>Bespoke catering trailers built in the North West, plus repairs, refits and
-           accident work on any make of trailer.</p>
+        <p><?= e(copytext('footer_text', 'Bespoke catering trailers built in the North West, plus repairs, refits and accident work on any make of trailer.')) ?></p>
       </div>
 
       <div>
@@ -63,7 +62,28 @@ $addressLine = trim($a['street'] . ', ' . $a['locality'] . ', ' . $a['postcode']
           <li><a href="<?= e(tel_href()) ?>" data-track="call-footer"><?= e($CFG['phone_display']) ?></a></li>
           <li><a href="mailto:<?= e($CFG['email']) ?>"><?= e($CFG['email']) ?></a></li>
           <li><a href="<?= e(whatsapp_href()) ?>" target="_blank" rel="noopener">WhatsApp</a></li>
+          <?php if (!empty($CFG['mobile'])): ?>
+            <li><a href="tel:<?= e(preg_replace('/[^0-9+]/', '', (string)$CFG['mobile'])) ?>">
+              <?= e($CFG['mobile']) ?> (mobile)</a></li>
+          <?php endif; ?>
         </ul>
+
+        <?php
+        $nets = array_filter([
+            'Facebook'  => $CFG['social']['facebook']  ?? '',
+            'Instagram' => $CFG['social']['instagram'] ?? '',
+            'TikTok'    => $CFG['social']['tiktok']    ?? '',
+            'YouTube'   => $CFG['social']['youtube']   ?? '',
+            'LinkedIn'  => $CFG['social']['linkedin']  ?? '',
+        ]);
+        if ($nets): ?>
+          <h4 style="margin-top:1.6rem">Follow us</h4>
+          <ul style="display:flex;flex-wrap:wrap;gap:.5rem 1.1rem">
+            <?php foreach ($nets as $label => $href): ?>
+              <li><a href="<?= e($href) ?>" target="_blank" rel="noopener me"><?= e($label) ?></a></li>
+            <?php endforeach; ?>
+          </ul>
+        <?php endif; ?>
         <h4 style="margin-top:1.6rem">Workshop</h4>
         <address style="font-style:normal;font-size:.95rem;color:var(--text-secondary)">
           <?= e($a['street']) ?><br>
@@ -117,6 +137,12 @@ $addressLine = trim($a['street'] . ', ' . $a['locality'] . ', ' . $a['postcode']
   </a>
   <a class="s-quote" href="/request-a-quote">Get a Quote</a>
 </div>
+
+<?php if ($gtm = setting('track.gtm')): ?>
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=<?= e((string)$gtm) ?>"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<?php endif; ?>
+<?= (string)setting('track.custom_body', '') ?>
 
 <script src="/assets/js/site.js?v=1" defer></script>
 <?php if ($PAGE['hero_scrub']): ?>

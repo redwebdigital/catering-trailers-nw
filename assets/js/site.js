@@ -83,7 +83,24 @@
      form. The visitor performs "built to your menu" rather than reading it. */
   var spec = document.getElementById('spec');
   if (spec) {
-    var state = { length: '3.0', axle: 'single', use: [] };
+    // Defaults come from the markup, which comes from the admin area, so adding
+    // or renaming an option never needs a code change.
+    var state = {
+      length: spec.getAttribute('data-default-length') || '3.0',
+      axle:   spec.getAttribute('data-default-axle') || 'single',
+      use:    []
+    };
+    var defaultWidth = parseInt(spec.getAttribute('data-default-width'), 10) || 244;
+
+    function labelFor(group, value) {
+      var el = spec.querySelector('.chip[data-group="' + group + '"][data-value="' + value + '"]');
+      return el ? el.textContent.trim() : value;
+    }
+    function widthFor(value) {
+      var el = spec.querySelector('.chip[data-group="length"][data-value="' + value + '"]');
+      var w = el ? parseInt(el.getAttribute('data-draw'), 10) : NaN;
+      return isNaN(w) || w <= 0 ? defaultWidth : w;
+    }
 
     var $ = function (id) { return document.getElementById(id); };
     var svgBody = $('specBody'), svgFill = $('specFill'), svgHatch = $('specHatch'),
@@ -93,11 +110,9 @@
         out = $('specOut'), link = $('specGo');
 
     var X = 46, TOP = 118, H = 70;                 // body origin and height
-    // drawing width per body length in metres, kept inside the 470 viewBox
-    var W = { '2.4': 196, '3.0': 244, '3.5': 285, '4.2': 342 };
 
     function render() {
-      var w  = W[state.length] || 244;
+      var w = widthFor(state.length);
       var r  = X + w;                              // right edge of the body
       var bot = TOP + H;                           // 188
 
@@ -128,7 +143,7 @@
         'M' + X + ' 224 H' + r + ' M' + X + ' 218 V230 M' + r + ' 218 V230');
       if (svgDimLbl) {
         svgDimLbl.setAttribute('x', X + w / 2);
-        svgDimLbl.textContent = state.length + 'm';
+        svgDimLbl.textContent = labelFor('length', state.length);
       }
       if (svgDimH) svgDimH.setAttribute('d',
         'M' + (r + 16) + ' ' + TOP + ' V' + bot +
@@ -138,10 +153,11 @@
 
       var uses = state.use.length ? state.use.join(', ') : 'not chosen yet';
       if (out) {
+        var strip = function (t) { return String(t).replace(/[<>&]/g, ''); };
         out.innerHTML =
-          '<b>' + state.length + 'm</b> body  ·  <b>' +
-          (state.axle === 'twin' ? 'Twin' : 'Single') + '</b> axle  ·  ' +
-          'Fit-out: <b>' + uses.replace(/[<>&]/g, '') + '</b>';
+          '<b>' + strip(labelFor('length', state.length)) + '</b> body  ·  <b>' +
+          strip(labelFor('axle', state.axle)) + '</b> axle  ·  ' +
+          'Fit-out: <b>' + strip(uses) + '</b>';
       }
       if (link) {
         link.href = '/request-a-quote?len=' + encodeURIComponent(state.length) +

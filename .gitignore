@@ -12,3 +12,14 @@ node_modules/
 /quote-uploads/*
 !/quote-uploads/.gitkeep
 /logs/
+
+# The database, secrets and uploaded media are DATA, not code. They live
+# outside the web root where a deploy cannot touch them, but ignore the
+# in-webroot fallback location too, just in case a locked-down host forces it.
+/private/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+secrets.php
+/assets/img/uploads/*
+!/assets/img/uploads/.gitkeep

@@ -29,6 +29,7 @@ DirectorySlash Off
 
   # the sitemap is generated, but must be served at the conventional address
   RewriteRule ^sitemap\.xml$ /sitemap.php [L]
+  RewriteRule ^robots\.txt$  /robots.php  [L]
 
   # /blog and /areas are real directories holding their own children, so the
   # generic "not a directory" rule below deliberately skips them. Map them
@@ -43,6 +44,7 @@ DirectorySlash Off
   RewriteCond %{REQUEST_METHOD} =GET
   RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
   RewriteCond %{REQUEST_URI} !^/sitemap\.php$
+  RewriteCond %{REQUEST_URI} !^/robots\.php$
   RewriteCond %{REQUEST_URI} !^/quote-handler\.php$
   RewriteRule ^ /%1 [R=301,L]
 
@@ -55,10 +57,12 @@ DirectorySlash Off
 
 # ---- Keep the internals private ----------------------------------------
 RedirectMatch 404 ^/inc/
+RedirectMatch 404 ^/private/
+RedirectMatch 404 ^/admin/inc/
 RedirectMatch 404 ^/quote-uploads/
 RedirectMatch 404 (?i)/\.(git|env)
 
-<FilesMatch "\.(md|json|log|sql|ini|bak|dist)$">
+<FilesMatch "\.(md|json|log|sql|sqlite|sqlite3|db|ini|bak|dist)$">
   Require all denied
 </FilesMatch>
 <Files "composer.json">

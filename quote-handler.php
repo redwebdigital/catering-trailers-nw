@@ -17,7 +17,7 @@
 
 declare(strict_types=1);
 
-$CFG = require __DIR__ . '/inc/config.php';
+require_once __DIR__ . '/inc/bootstrap.php';   // $CFG, overlaid with admin settings
 
 $isAjax = (($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'fetch');
 
@@ -258,7 +258,37 @@ foreach ($saved as $file) {
 }
 $parts[] = "--{$boundary}--";
 
+/**
+ * Save first, send second. An enquiry that reaches the database can never be
+ * lost to a mail server problem, and the admin area becomes the record of truth.
+ */
+$enquiryId = null;
+try {
+    if (db_ready()) {
+        $source = (string)($_POST['source'] ?? 'quote');
+        if (!in_array($source, ['quote','general','new-trailer','repair'], true)) { $source = 'quote'; }
+
+        q("INSERT INTO enquiries
+           (created_at, source, name, phone, email, town, job_type, body_length, axle,
+            fit_out, appliances, power, budget, required_date, message, extra, files, status, ip, mailed)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'New',?,0)", [
+            date('c'), $source, $name, $phone, $email, $town, $jobType, $size, $axle,
+            $use, implode(', ', $appliances), $power, $budget, $reqDate, $message,
+            trim($pNotes . ($tow !== '' ? ' | tows with: ' . $tow : '')),
+            implode('|', array_column($saved, 'name')), $ip,
+        ]);
+        $enquiryId = (int)db()->lastInsertId();
+    }
+} catch (Throwable $e) {
+    // a database problem must never stop the customer's enquiry being emailed
+    error_log('CTNW enquiry save failed: ' . $e->getMessage());
+}
+
 $sent = @mail($to, $subject, implode('', $parts), implode("\r\n", $headers), '-f' . $fromMailbox);
+
+if ($enquiryId && $sent) {
+    try { q("UPDATE enquiries SET mailed = 1 WHERE id = ?", [$enquiryId]); } catch (Throwable $e) {}
+}
 
 // ── always keep our own copy, so nothing is lost if mail fails ───────────
 $logDir = __DIR__ . '/logs';
@@ -273,7 +303,9 @@ if (!file_exists($logDir . '/.htaccess')) {
     FILE_APPEND | LOCK_EX
 );
 
-if (!$sent) {
+// Safely in the database means the customer has been served, whatever the mail
+// server did. Only fail outright when we have neither.
+if (!$sent && !$enquiryId) {
     respond(false, 'Mail could not be sent', 500);
 }
 

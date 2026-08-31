@@ -35,6 +35,11 @@ $PAGE = [
 ];
 
 require __DIR__ . '/inc/header.php';
+
+$OVH = page_seo('/');
+$HERO_H1 = $OVH['h1'] ?? '';
+if ($HERO_H1 === '') { $HERO_H1 = $OVH['hero_head'] ?? ''; }
+if ($HERO_H1 === '') { $HERO_H1 = copytext('hero_heading', 'Bespoke Catering Trailers Built in the North West'); }
 ?>
 
 <!-- ═══ HERO ═══════════════════════════════════════════════════════════ -->
@@ -50,15 +55,13 @@ require __DIR__ . '/inc/header.php';
 
   <div class="hero--still__body">
     <div class="wrap">
-      <p class="kicker">Built in the North West</p>
-      <h1>Bespoke Catering Trailers Built in the North West</h1>
-      <p class="hero--still__lede">
-        Built to your menu, not off a shelf. New builds, repairs and refits for
-        street food traders, burger vans and coffee trailers.
-      </p>
+      <p class="kicker"><?= e(copytext('hero_kicker', 'Built in the North West')) ?></p>
+      <h1><?= e($HERO_H1) ?></h1>
+      <p class="hero--still__lede"><?= e(copytext('hero_sub',
+        'Built to your menu, not off a shelf. New builds, repairs and refits for street food traders, burger vans and coffee trailers.')) ?></p>
 
       <div class="btn-row">
-        <a class="btn btn--accent btn--lg" href="/request-a-quote">Request a Quote</a>
+        <a class="btn btn--accent btn--lg" href="/request-a-quote"><?= e(copytext('hero_cta', 'Request a Quote')) ?></a>
         <a class="btn btn--ghost btn--lg" href="<?= e(tel_href()) ?>" data-track="call-hero">
           Call <?= e($CFG['phone_display']) ?>
         </a>
@@ -68,9 +71,13 @@ require __DIR__ . '/inc/header.php';
       </div>
 
       <ul class="hero--still__proof">
-        <li>Gas Safe and electrical certificates handed over with the keys</li>
-        <li><?= e($CFG['chassis_warranty']) ?> anti corrosion chassis warranty</li>
-        <li>Ready to trade the day you collect it</li>
+        <?php foreach ([
+            copytext('proof_1', 'Gas Safe and electrical certificates handed over with the keys'),
+            copytext('proof_2', $CFG['chassis_warranty'] . ' anti corrosion chassis warranty'),
+            copytext('proof_3', 'Ready to trade the day you collect it'),
+        ] as $proof): if (trim($proof) === '') continue; ?>
+          <li><?= e($proof) ?></li>
+        <?php endforeach; ?>
       </ul>
     </div>
   </div>
@@ -188,38 +195,33 @@ require __DIR__ . '/inc/header.php';
   <div class="wrap">
     <div class="rise">
       <p class="kicker">How a build runs</p>
-      <h2 id="proc-h">From your menu to your pitch</h2>
-      <p class="lede">Five stages. You know where your trailer is at every one of them.</p>
+      <h2 id="proc-h"><?= e(copytext('builder_heading', 'From your menu to your pitch')) ?></h2>
+      <p class="lede"><?= e(copytext('builder_intro', 'Five stages. You know where your trailer is at every one of them.')) ?></p>
     </div>
 
     <div class="process rise" style="margin-top:2.8rem">
 
+      <?php
+      // Stages come from the admin area. The shipped five are the fallback so
+      // the page is never blank if the database is unavailable.
+      $STAGES = builder_stages();
+      if (!$STAGES) {
+          $STAGES = [
+            ['title' => 'We take your spec', 'body' => 'Your menu, your appliances, your pitch and your tow vehicle. Twenty minutes on the phone saves weeks later.'],
+            ['title' => 'Drawings and a fixed price', 'body' => 'A layout drawing and a written quote with nothing hidden. Change it as many times as you like before you commit.'],
+            ['title' => 'Chassis and shell', 'body' => 'Galvanised chassis, insulated body, hatch and door openings cut and framed. Photographs sent as it goes.'],
+            ['title' => 'Fit-out, gas and electrics', 'body' => 'Stainless surfaces, appliances installed, gas pipework and electrics run, then tested and certified.'],
+            ['title' => 'Handover', 'body' => 'We walk you round it, hand you both certificates, and show you how everything works before you tow away.'],
+          ];
+      }
+      ?>
       <ol class="steps">
-        <li>
-          <h3>We take your spec</h3>
-          <p>Your menu, your appliances, your pitch and your tow vehicle. Twenty minutes
-             on the phone saves weeks later.</p>
-        </li>
-        <li>
-          <h3>Drawings and a fixed price</h3>
-          <p>A layout drawing and a written quote with nothing hidden. Change it as many
-             times as you like before you commit.</p>
-        </li>
-        <li>
-          <h3>Chassis and shell</h3>
-          <p>Galvanised chassis, insulated body, hatch and door openings cut and framed.
-             Photographs sent as it goes.</p>
-        </li>
-        <li>
-          <h3>Fit-out, gas and electrics</h3>
-          <p>Stainless surfaces, appliances installed, gas pipework and electrics run,
-             then tested and certified.</p>
-        </li>
-        <li>
-          <h3>Handover</h3>
-          <p>We walk you round it, hand you both certificates, and show you how everything
-             works before you tow away.</p>
-        </li>
+        <?php foreach ($STAGES as $st): ?>
+          <li>
+            <h3><?= e($st['title']) ?></h3>
+            <p><?= e($st['body']) ?></p>
+          </li>
+        <?php endforeach; ?>
       </ol>
 
       <div>
@@ -248,36 +250,78 @@ require __DIR__ . '/inc/header.php';
           </svg>
         </div>
 
-        <div class="spec" id="spec">
+        <?php
+        /* Every option below is loaded from the admin area. Nothing here is
+           hard-coded: add, rename, reprice, reorder or disable them under
+           Quote Builder and this section follows. The fallbacks only appear
+           if the database is unreachable, so the page never renders empty. */
+        $B_LEN  = builder_options('length');
+        $B_AXLE = builder_options('axle');
+        $B_USE  = builder_options('use');
+        if (!$B_LEN) $B_LEN = [
+            ['label'=>'2.4m','value'=>'2.4','draw_width'=>196,'price_from'=>''],
+            ['label'=>'3.0m','value'=>'3.0','draw_width'=>244,'price_from'=>''],
+            ['label'=>'3.5m','value'=>'3.5','draw_width'=>285,'price_from'=>''],
+            ['label'=>'4.2m','value'=>'4.2','draw_width'=>342,'price_from'=>''],
+        ];
+        if (!$B_AXLE) $B_AXLE = [
+            ['label'=>'Single','value'=>'single','price_from'=>''],
+            ['label'=>'Twin','value'=>'twin','price_from'=>''],
+        ];
+        if (!$B_USE) $B_USE = [
+            ['label'=>'Burgers','value'=>'Burgers','price_from'=>''],
+            ['label'=>'Coffee','value'=>'Coffee','price_from'=>''],
+            ['label'=>'Pizza','value'=>'Pizza','price_from'=>''],
+            ['label'=>'Fried chicken','value'=>'Fried chicken','price_from'=>''],
+            ['label'=>'Desserts','value'=>'Desserts','price_from'=>''],
+        ];
+        $firstLen  = $B_LEN[0]  ?? null;
+        $firstAxle = $B_AXLE[0] ?? null;
+        ?>
+        <div class="spec" id="spec"
+             data-default-length="<?= e((string)($firstLen['value'] ?? '3.0')) ?>"
+             data-default-width="<?= (int)($firstLen['draw_width'] ?? 244) ?>"
+             data-default-axle="<?= e((string)($firstAxle['value'] ?? 'single')) ?>">
+
           <div class="spec__row">
             <span>Body length</span>
             <div class="chips">
-              <button class="chip" type="button" data-group="length" data-value="2.4" aria-pressed="false">2.4m</button>
-              <button class="chip" type="button" data-group="length" data-value="3.0" aria-pressed="true">3.0m</button>
-              <button class="chip" type="button" data-group="length" data-value="3.5" aria-pressed="false">3.5m</button>
-              <button class="chip" type="button" data-group="length" data-value="4.2" aria-pressed="false">4.2m</button>
+              <?php foreach ($B_LEN as $i => $o): ?>
+                <button class="chip" type="button" data-group="length"
+                        data-value="<?= e((string)$o['value']) ?>"
+                        data-draw="<?= (int)($o['draw_width'] ?? 0) ?>"
+                        <?= !empty($o['price_from']) ? 'data-price="' . e((string)$o['price_from']) . '"' : '' ?>
+                        aria-pressed="<?= $i === 0 ? 'true' : 'false' ?>"><?= e((string)$o['label']) ?></button>
+              <?php endforeach; ?>
             </div>
           </div>
+
           <div class="spec__row">
             <span>Axle</span>
             <div class="chips">
-              <button class="chip" type="button" data-group="axle" data-value="single" aria-pressed="true">Single</button>
-              <button class="chip" type="button" data-group="axle" data-value="twin" aria-pressed="false">Twin</button>
+              <?php foreach ($B_AXLE as $i => $o): ?>
+                <button class="chip" type="button" data-group="axle"
+                        data-value="<?= e((string)$o['value']) ?>"
+                        <?= !empty($o['price_from']) ? 'data-price="' . e((string)$o['price_from']) . '"' : '' ?>
+                        aria-pressed="<?= $i === 0 ? 'true' : 'false' ?>"><?= e((string)$o['label']) ?></button>
+              <?php endforeach; ?>
             </div>
           </div>
+
           <div class="spec__row">
             <span>Fit-out for</span>
             <div class="chips">
-              <button class="chip" type="button" data-group="use" data-value="Burgers" aria-pressed="false">Burgers</button>
-              <button class="chip" type="button" data-group="use" data-value="Coffee" aria-pressed="false">Coffee</button>
-              <button class="chip" type="button" data-group="use" data-value="Pizza" aria-pressed="false">Pizza</button>
-              <button class="chip" type="button" data-group="use" data-value="Fried chicken" aria-pressed="false">Fried chicken</button>
-              <button class="chip" type="button" data-group="use" data-value="Desserts" aria-pressed="false">Desserts</button>
+              <?php foreach ($B_USE as $o): ?>
+                <button class="chip" type="button" data-group="use"
+                        data-value="<?= e((string)$o['value']) ?>"
+                        <?= !empty($o['price_from']) ? 'data-price="' . e((string)$o['price_from']) . '"' : '' ?>
+                        aria-pressed="false"><?= e((string)$o['label']) ?></button>
+              <?php endforeach; ?>
             </div>
           </div>
 
           <p class="spec__out" id="specOut"></p>
-          <a class="btn btn--accent" id="specGo" href="/request-a-quote">Send this spec</a>
+          <a class="btn btn--accent" id="specGo" href="/request-a-quote"><?= e(copytext('builder_button', 'Send this spec')) ?></a>
         </div>
       </div>
 

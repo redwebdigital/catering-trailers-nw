@@ -6,7 +6,126 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/db.php';
+
+/**
+ * $CFG is config.php overlaid with anything set in the admin area.
+ *
+ * config.php stays as the shipped defaults and the safety net: if the database
+ * is missing or empty the site still renders exactly as it did before. Every
+ * template already reads $CFG, so a value changed in admin reaches the header,
+ * footer, schema, buttons and forms without touching a single template.
+ */
 $CFG = require __DIR__ . '/config.php';
+
+(static function (array &$CFG): void {
+    if (!db_ready()) return;                 // not installed yet: defaults stand
+    $s = settings_all();
+    if (!$s) return;
+
+    // flat setting key => where it lives in $CFG
+    $scalar = [
+        'biz.name'            => 'name',
+        'biz.legal_name'      => 'legal_name',
+        'biz.domain'          => 'domain',
+        'biz.base_url'        => 'base_url',
+        'biz.phone_display'   => 'phone_display',
+        'biz.phone_e164'      => 'phone_e164',
+        'biz.mobile'          => 'mobile',
+        'biz.whatsapp'        => 'whatsapp',
+        'biz.email'           => 'email',
+        'biz.enquiry_inbox'   => 'enquiry_inbox',
+        'biz.mail_from'       => 'mail_from',
+        'biz.company_number'  => 'company_number',
+        'biz.vat_number'      => 'vat_number',
+        'biz.lead_time'       => 'lead_time',
+        'biz.chassis_warranty'=> 'chassis_warranty',
+        'biz.build_warranty'  => 'build_warranty',
+        'seo.google_place_id' => 'google_place_id',
+        'seo.google_reviews_url' => 'google_reviews_url',
+    ];
+    foreach ($scalar as $key => $target) {
+        if (isset($s[$key]) && $s[$key] !== '') { $CFG[$target] = $s[$key]; }
+    }
+
+    foreach (['street','locality','region','postcode','country'] as $part) {
+        if (isset($s['biz.address_' . $part]) && $s['biz.address_' . $part] !== '') {
+            $CFG['address'][$part] = $s['biz.address_' . $part];
+        }
+    }
+    foreach (['lat','lng'] as $part) {
+        if (isset($s['biz.geo_' . $part]) && $s['biz.geo_' . $part] !== '') {
+            $CFG['geo'][$part] = (float)$s['biz.geo_' . $part];
+        }
+    }
+
+    foreach (['facebook','instagram','tiktok','youtube','linkedin'] as $net) {
+        if (isset($s['social.' . $net])) { $CFG['social'][$net] = $s['social.' . $net]; }
+    }
+
+    if (isset($s['biz.hours_display']) && $s['biz.hours_display'] !== '') {
+        $rows = [];
+        foreach (preg_split('/\r?\n/', $s['biz.hours_display']) as $line) {
+            if (!str_contains($line, '|')) continue;
+            [$days, $time] = array_map('trim', explode('|', $line, 2));
+            if ($days !== '') { $rows[$days] = $time; }
+        }
+        if ($rows) { $CFG['hours_display'] = $rows; }
+    }
+
+    if (isset($s['content.imagery_notice_on'])) {
+        $CFG['show_imagery_notice'] = $s['content.imagery_notice_on'] === '1';
+    }
+
+    $CFG['_db'] = true;                       // templates can tell admin is live
+})($CFG);
+
+/** Editable site copy, with the shipped wording as the fallback. */
+function copytext(string $key, string $default): string
+{
+    $v = db_ready() ? setting('content.' . $key) : null;
+    return ($v === null || $v === '') ? $default : (string)$v;
+}
+
+/** Admin overrides for one page, keyed on its canonical path. */
+function page_seo(string $path): array
+{
+    static $cache = [];
+    if (isset($cache[$path])) return $cache[$path];
+    if (!db_ready()) return $cache[$path] = [];
+    try {
+        $row = q_one("SELECT * FROM pages WHERE slug = ?", ['/' . trim($path, '/')]);
+    } catch (Throwable $e) {
+        $row = null;
+    }
+    return $cache[$path] = $row ?: [];
+}
+
+/** The configurator's options, grouped. Empty array when not installed. */
+function builder_options(string $group): array
+{
+    static $all = null;
+    if ($all === null) {
+        $all = [];
+        if (db_ready()) {
+            try {
+                foreach (q_all("SELECT * FROM builder_options WHERE enabled = 1
+                                ORDER BY sort_order, id") as $o) {
+                    $all[$o['group_key']][] = $o;
+                }
+            } catch (Throwable $e) { $all = []; }
+        }
+    }
+    return $all[$group] ?? [];
+}
+
+function builder_stages(): array
+{
+    if (!db_ready()) return [];
+    try {
+        return q_all("SELECT * FROM builder_stages WHERE enabled = 1 ORDER BY sort_order, id");
+    } catch (Throwable $e) { return []; }
+}
 
 /** Escape for HTML text and attribute contexts. */
 function e(?string $s): string

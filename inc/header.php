@@ -28,7 +28,35 @@ $PAGE = ($PAGE ?? []) + [
     'hero_scrub'  => false,
 ];
 
-$canonical = url($PAGE['path']);
+/**
+ * Admin overrides. Anything set under Pages & SEO wins over what the page
+ * declares; anything left blank there keeps the page's own wording, so the
+ * admin area can be used lightly or not at all.
+ */
+$OV = page_seo($PAGE['path']);
+foreach ([
+    'seo_title' => 'title',
+    'meta_desc' => 'description',
+    'og_title'  => 'og_title',
+    'og_desc'   => 'og_description',
+    'og_image'  => 'og_image',
+] as $col => $key) {
+    if (!empty($OV[$col])) { $PAGE[$key] = $OV[$col]; }
+}
+$PAGE['og_title']       = $PAGE['og_title']       ?? $PAGE['title'];
+$PAGE['og_description'] = $PAGE['og_description'] ?? $PAGE['description'];
+
+$suffix = (string)setting('seo.title_suffix', '');
+if ($suffix !== '' && !empty($OV['seo_title']) && !str_ends_with($PAGE['title'], $suffix)) {
+    $PAGE['title'] .= $suffix;
+}
+if ($PAGE['description'] === '') {
+    $PAGE['description'] = (string)setting('seo.default_desc', '');
+}
+
+$robots = trim(($OV['robots_index'] ?? 'index') . ', ' . ($OV['robots_follow'] ?? 'follow'));
+
+$canonical = !empty($OV['canonical']) ? $OV['canonical'] : url($PAGE['path']);
 
 // Build the JSON-LD graph: the business is on every page, plus page extras.
 $graph = array_merge([schema_local_business()], $PAGE['schema']);
@@ -62,17 +90,23 @@ $NAV = [
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="<?= e($CFG['name']) ?>">
-<meta property="og:title" content="<?= e($PAGE['title']) ?>">
-<meta property="og:description" content="<?= e($PAGE['description']) ?>">
+<meta property="og:title" content="<?= e($PAGE['og_title']) ?>">
+<meta property="og:description" content="<?= e($PAGE['og_description']) ?>">
 <meta property="og:url" content="<?= e($canonical) ?>">
 <meta property="og:image" content="<?= e(url($PAGE['og_image'])) ?>">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="en_GB">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="<?= e($PAGE['title']) ?>">
-<meta name="twitter:description" content="<?= e($PAGE['description']) ?>">
+<meta name="twitter:title" content="<?= e($PAGE['og_title']) ?>">
+<meta name="twitter:description" content="<?= e($PAGE['og_description']) ?>">
 <meta name="twitter:image" content="<?= e(url($PAGE['og_image'])) ?>">
+<?php if ($robots !== 'index, follow'): ?>
+<meta name="robots" content="<?= e($robots) ?>">
+<?php endif; ?>
+<?php if ($gsc = setting('track.gsc')): ?>
+<meta name="google-site-verification" content="<?= e((string)$gsc) ?>">
+<?php endif; ?>
 
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
@@ -84,6 +118,30 @@ $NAV = [
 <link rel="stylesheet" href="/assets/css/site.css?v=2">
 
 <script type="application/ld+json"><?= $jsonld ?></script>
+
+<?php /* Tracking, only ever emitted when the matching field has been filled in. */ ?>
+<?php if ($gtm = setting('track.gtm')): ?>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
+var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;
+j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','<?= e((string)$gtm) ?>');</script>
+<?php endif; ?>
+
+<?php if (($ga4 = setting('track.ga4')) && !$gtm): ?>
+<script async src="https://www.googletagmanager.com/gtag/js?id=<?= e((string)$ga4) ?>"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
+gtag('js',new Date());gtag('config','<?= e((string)$ga4) ?>');</script>
+<?php endif; ?>
+
+<?php if ($px = setting('track.meta_pixel')): ?>
+<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;
+n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','<?= e((string)$px) ?>');fbq('track','PageView');</script>
+<?php endif; ?>
+
+<?= (string)setting('track.custom_head', '') ?>
 </head>
 
 <body<?= $PAGE['hero_scrub'] ? ' class="has-scrub"' : '' ?>>
