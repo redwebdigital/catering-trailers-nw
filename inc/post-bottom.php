@@ -12,7 +12,9 @@ declare(strict_types=1);
        will come back with a real figure and a real date.</p>
     <div class="btn-row" style="justify-content:center;margin-top:1.5rem">
       <a class="btn btn--accent btn--lg" href="/request-a-quote">Request a Quote</a>
+      <?php if (has_phone()): ?>
       <a class="btn btn--ghost btn--lg" href="<?= e(tel_href()) ?>">Call <?= e($CFG['phone_display']) ?></a>
+      <?php endif; ?>
     </div>
   </div>
 </section>

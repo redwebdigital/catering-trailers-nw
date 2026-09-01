@@ -19,13 +19,14 @@ $noPhone  = !empty($PAGE['no_phone']);
     <p class="kicker" style="justify-content:center">Tell us what you need</p>
     <h2 id="cta-h">Get a proper quote, not a guess</h2>
     <p>Send us your sizes, your menu and your budget and we will come back with a real
-       figure and a real date. If your trailer is off the road today, call instead and
-       we will pick up.</p>
+       figure and a real date.<?= has_phone() ? ' If your trailer is off the road today, call instead and we will pick up.' : '' ?></p>
     <div class="btn-row" style="justify-content:center">
       <a class="btn btn--accent btn--lg" href="/request-a-quote">Request a Quote</a>
+      <?php if (has_phone()): ?>
       <a class="btn btn--ghost btn--lg" href="<?= e(tel_href()) ?>" data-track="call-cta">
         Call <?= e($CFG['phone_display']) ?>
       </a>
+      <?php endif; ?>
       <a class="btn btn--wa btn--lg" href="<?= e(whatsapp_href()) ?>" target="_blank" rel="noopener">
         WhatsApp us
       </a>
@@ -67,7 +68,9 @@ $noPhone  = !empty($PAGE['no_phone']);
       <div>
         <h3 class="foot__h">Get in touch</h3>
         <ul>
-          <li><a href="<?= e(tel_href()) ?>" data-track="call-footer"><?= e($CFG['phone_display']) ?></a></li>
+          <?php if (has_phone()): ?>
+            <li><a href="<?= e(tel_href()) ?>" data-track="call-footer"><?= e($CFG['phone_display']) ?></a></li>
+          <?php endif; ?>
           <li><a href="mailto:<?= e($CFG['email']) ?>"><?= e($CFG['email']) ?></a></li>
           <li><a href="<?= e(whatsapp_href()) ?>" target="_blank" rel="noopener">WhatsApp</a></li>
           <?php if (!empty($CFG['mobile'])): ?>
@@ -134,8 +137,9 @@ $noPhone  = !empty($PAGE['no_phone']);
 </footer>
 
 <!-- sticky mobile call to action -->
-<div class="sticky<?= $noPhone ? ' sticky--quote' : '' ?>" id="sticky" aria-label="Quick contact">
-  <?php if (!$noPhone): ?>
+<?php $stickyPhone = !$noPhone && has_phone(); ?>
+<div class="sticky<?= $stickyPhone ? '' : ' sticky--quote' ?>" id="sticky" aria-label="Quick contact">
+  <?php if ($stickyPhone): ?>
   <a class="s-call" href="<?= e(tel_href()) ?>" data-track="call-sticky">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11.4 11.4 0 0 0 3.6.58 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .57 3.6 1 1 0 0 1-.25 1z"/></svg>
     Call

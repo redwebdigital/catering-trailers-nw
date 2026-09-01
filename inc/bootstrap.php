@@ -213,6 +213,19 @@ function url(string $path = ''): string
 }
 
 /** Digits-only phone for tel: links. */
+/**
+ * Is there a phone number to show?
+ *
+ * Every call to action that offers one is guarded by this, so clearing the
+ * number under Business Details removes it from the whole site cleanly rather
+ * than leaving empty buttons and dead tel: links behind.
+ */
+function has_phone(): bool
+{
+    global $CFG;
+    return trim((string)($CFG['phone_display'] ?? '')) !== '';
+}
+
 function tel_href(): string
 {
     global $CFG;
@@ -279,13 +292,14 @@ function schema_local_business(): array
         '@id'        => url('/#business'),
         'name'       => $CFG['name'],
         'url'        => $CFG['base_url'],
-        'telephone'  => $CFG['phone_e164'],
         'email'      => $CFG['email'],
         'image'      => url('/assets/img/og-default.jpg'),
         'logo'       => url('/assets/img/logo.png'),
         'description' => 'Bespoke catering trailer manufacturer and repairer based in the '
                        . 'North West. New builds, chassis and accident repairs, gas and '
                        . 'electrical work, stainless fit-outs and refurbishments.',
+        // omitted entirely when there is no number, rather than published empty
+        ...(trim((string)$CFG['phone_e164']) !== '' ? ['telephone' => $CFG['phone_e164']] : []),
         'address' => [
             '@type'           => 'PostalAddress',
             'streetAddress'   => $a['street'],

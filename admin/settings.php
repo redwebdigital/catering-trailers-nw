@@ -39,8 +39,8 @@ $fields = [
       'default' => 'Something new is on the way'],
   'site.cs_message' => ['label' => 'Holding page message', 'type' => 'textarea', 'rows' => 3, 'count' => 220,
       'default' => 'Our website is being updated. We are still building, repairing and refurbishing catering trailers in the meantime, so please do get in touch.'],
-  'site.cs_show_contact' => ['label' => 'Show email and phone on the holding page', 'type' => 'checkbox',
-      'hint' => 'Taken from Business Details, so there is nothing to keep in step.'],
+  'site.cs_show_contact' => ['label' => 'Show an email link on the holding page', 'type' => 'checkbox',
+      'hint' => 'Uses the enquiry address from Business Details. No phone number is shown on the holding page.'],
 
   '_h1' => ['label' => 'Search defaults', 'type' => 'heading',
             'hint' => 'Used on any page that has not been given its own wording under Pages & SEO.'],

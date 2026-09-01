@@ -79,7 +79,9 @@ require __DIR__ . '/header.php';
       <p class="lede"><?= e($A['lead']) ?></p>
       <div class="btn-row" style="margin-top:1.8rem">
         <a class="btn btn--accent btn--lg" href="/request-a-quote">Request a Quote</a>
+        <?php if (has_phone()): ?>
         <a class="btn btn--ghost btn--lg" href="<?= e(tel_href()) ?>">Call <?= e($CFG['phone_display']) ?></a>
+        <?php endif; ?>
       </div>
     </div>
   </div>

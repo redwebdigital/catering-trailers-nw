@@ -159,20 +159,12 @@ declare(strict_types=1);
     <h1><?= e($heading) ?></h1>
     <p class="msg"><?= e($message) ?></p>
 
-    <?php if ($showContact && ($email !== '' || $phone !== '')): ?>
+    <?php if ($showContact && $email !== ''): ?>
       <div class="contact">
-        <?php if ($email !== ''): ?>
-          <a class="primary" href="mailto:<?= e($email) ?>">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zm0 0 9 7 9-7"/></svg>
-            Email us
-          </a>
-        <?php endif; ?>
-        <?php if ($phone !== ''): ?>
-          <a class="ghost" href="tel:<?= e(preg_replace('/[^0-9+]/', '', $phone)) ?>">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11.4 11.4 0 0 0 3.6.58 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .57 3.6 1 1 0 0 1-.25 1z"/></svg>
-            <?= e($phone) ?>
-          </a>
-        <?php endif; ?>
+        <a class="primary" href="mailto:<?= e($email) ?>">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zm0 0 9 7 9-7"/></svg>
+          Email us
+        </a>
       </div>
     <?php endif; ?>
 

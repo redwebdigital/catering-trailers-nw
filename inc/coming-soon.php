@@ -77,7 +77,7 @@ function coming_soon_gate(): void
     $showContact = (string)setting('site.cs_show_contact', '1') === '1';
 
     $email = trim((string)($CFG['enquiry_inbox'] ?? ''));
-    $phone = trim((string)($CFG['phone_display'] ?? ''));
+    $phone = "";   // the holding page offers email only
     $logo  = trim((string)setting('seo.logo', '')) ?: '/assets/img/logo.png';
 
     require __DIR__ . '/coming-soon-page.php';

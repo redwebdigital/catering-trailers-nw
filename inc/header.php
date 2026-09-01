@@ -185,7 +185,7 @@ fbq('init','<?= e((string)$px) ?>');fbq('track','PageView');</script>
     </nav>
 
     <div class="masthead__cta">
-      <?php if (!$NO_PHONE): ?>
+      <?php if (!$NO_PHONE && has_phone()): ?>
       <a class="tel" href="<?= e(tel_href()) ?>" data-track="call-header">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11.4 11.4 0 0 0 3.6.58 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .57 3.6 1 1 0 0 1-.25 1z"/></svg>
         <span><?= e($CFG['phone_display']) ?></span>

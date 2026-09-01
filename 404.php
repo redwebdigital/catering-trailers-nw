@@ -26,7 +26,9 @@ require __DIR__ . '/inc/header.php';
 
     <div class="btn-row" style="justify-content:center;margin-top:1.8rem">
       <a class="btn btn--accent btn--lg" href="/">Back to the home page</a>
+      <?php if (has_phone()): ?>
       <a class="btn btn--ghost btn--lg" href="<?= e(tel_href()) ?>">Call <?= e($CFG['phone_display']) ?></a>
+      <?php endif; ?>
     </div>
 
     <div class="areas" style="margin-top:3rem;text-align:left">

@@ -22,9 +22,11 @@ return [
     'base_url'    => 'https://cateringtrailersnw.co.uk', // no trailing slash
 
     // ── Contact ──────────────────────────────────────────────────────────
-    // [PLACEHOLDER] all four of these are dummy values.
-    'phone_display' => '01925 000 000',
-    'phone_e164'    => '+441925000000',   // used by click-to-call and schema
+    // No invented phone number ships here. Blank means the site shows no call
+    // buttons at all, rather than a number that does not answer. Put the real
+    // one in under Admin -> Business Details and it appears everywhere.
+    'phone_display' => '',
+    'phone_e164'    => '',                // used by click-to-call and schema
     'whatsapp'      => '447000000000',    // international, no + and no spaces
     'email'         => 'enquiries@cateringtrailersnw.co.uk',
 

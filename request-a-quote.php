@@ -55,11 +55,12 @@ require __DIR__ . '/inc/header.php';
 
     <div id="formOk" class="note note--ok rise" hidden>
       <strong>Got it.</strong> We will come back to you within one working day, usually
-      sooner. If it is urgent, call <?= e($CFG['phone_display']) ?> instead.
+      sooner.<?= has_phone() ? ' If it is urgent, call ' . e($CFG['phone_display']) . ' instead.' : '' ?>
     </div>
     <div id="formBad" class="note note--bad rise" hidden>
-      That did not send. Call us on <?= e($CFG['phone_display']) ?> and we will take the
-      details over the phone.
+      That did not send. <?= has_phone()
+        ? 'Call us on ' . e($CFG['phone_display']) . ' and we will take the details over the phone.'
+        : 'Please try again, or email ' . e($CFG['enquiry_inbox']) . '.' ?>
     </div>
 
     <form class="form rise" id="quoteForm" action="/quote-handler.php" method="post"

@@ -22,7 +22,9 @@ require __DIR__ . '/inc/header.php';
        instead and we will pick up.</p>
 
     <div class="btn-row" style="justify-content:center;margin-top:1.8rem">
+      <?php if (has_phone()): ?>
       <a class="btn btn--accent btn--lg" href="<?= e(tel_href()) ?>">Call <?= e($CFG['phone_display']) ?></a>
+      <?php endif; ?>
       <a class="btn btn--wa btn--lg" href="<?= e(whatsapp_href()) ?>" target="_blank" rel="noopener">WhatsApp us</a>
     </div>
 
