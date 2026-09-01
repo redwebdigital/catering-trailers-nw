@@ -90,32 +90,85 @@ declare(strict_types=1);
     text-wrap:pretty;
   }
 
-  .contact{
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:center;
-    gap:.7rem;
-    margin-top:clamp(1.8rem,5vw,2.6rem);
+  /* ---------- enquiry form ---------- */
+  .enq{
+    margin-top:clamp(1.9rem,5vw,2.6rem);
+    text-align:left;
   }
-  .contact a{
-    display:inline-flex;
-    align-items:center;
-    gap:.55rem;
-    padding:.85rem 1.4rem;
+  .enq__lead{
+    margin:0 0 1rem;
+    text-align:center;
+    font-size:.95rem;
+    color:#A9BBCD;
+  }
+  .row{display:grid;gap:.7rem;grid-template-columns:1fr 1fr}
+  @media (max-width:520px){.row{grid-template-columns:1fr}}
+
+  .enq input[type=text],
+  .enq input[type=email],
+  .enq input[type=tel],
+  .enq textarea{
+    width:100%;
+    padding:.8rem .9rem;
+    margin-bottom:.7rem;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(143,163,184,.34);
     border-radius:3px;
-    font:600 .96rem/1 'Source Sans 3',system-ui,sans-serif;
-    text-decoration:none;
-    transition:transform .2s ease, background .2s ease, border-color .2s ease;
+    color:#F4F7FA;
+    font:400 1rem/1.5 'Source Sans 3',system-ui,sans-serif;
+    transition:border-color .18s ease, background .18s ease;
   }
-  .contact a svg{width:17px;height:17px;fill:currentColor;flex:none}
-  .contact .primary{background:#DE000F;color:#fff}
-  .contact .primary:hover{background:#FF1F2E;transform:translateY(-1px)}
-  .contact .ghost{
-    background:transparent;color:#F4F7FA;
-    border:1px solid rgba(143,163,184,.42);
+  .row input{margin-bottom:0}
+  .enq textarea{resize:vertical;min-height:110px}
+  .enq ::placeholder{color:#7C8FA3;opacity:1}
+  .enq input:focus,.enq textarea:focus{
+    outline:none;
+    border-color:#DE000F;
+    background:rgba(255,255,255,.08);
   }
-  .contact .ghost:hover{border-color:#8FA3B8;transform:translateY(-1px)}
-  .contact a:focus-visible{outline:2px solid #FF1F2E;outline-offset:3px}
+
+  .consent{
+    display:flex;
+    align-items:flex-start;
+    gap:.6rem;
+    margin:.5rem 0 1.1rem;
+    font-size:.85rem;
+    line-height:1.5;
+    color:#A9BBCD;
+    cursor:pointer;
+  }
+  .consent input{margin-top:.2rem;accent-color:#DE000F;flex:none;width:16px;height:16px}
+
+  button.primary{
+    display:block;
+    width:100%;
+    padding:.95rem 1.4rem;
+    border:0;
+    border-radius:3px;
+    background:#DE000F;
+    color:#fff;
+    font:600 1rem/1 'Source Sans 3',system-ui,sans-serif;
+    cursor:pointer;
+    transition:background .2s ease, transform .2s ease;
+  }
+  button.primary:hover{background:#FF1F2E;transform:translateY(-1px)}
+  button.primary[disabled]{opacity:.6;cursor:default;transform:none}
+  .enq :focus-visible{outline:2px solid #FF1F2E;outline-offset:3px}
+
+  .note{
+    padding:.9rem 1.1rem;
+    border-radius:3px;
+    border-left:3px solid;
+    font-size:.94rem;
+    text-align:left;
+    margin:0 0 1rem;
+  }
+  .note--ok{background:rgba(31,168,85,.12);border-left-color:#1FA855;color:#D9F2E2}
+  .note--bad{background:rgba(222,0,15,.12);border-left-color:#DE000F;color:#FBD9DC}
+  .note a{color:inherit}
+
+  .hp{position:absolute;left:-9999px}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
   .foot{
     margin-top:clamp(2.2rem,6vw,3.2rem);
@@ -159,17 +212,96 @@ declare(strict_types=1);
     <h1><?= e($heading) ?></h1>
     <p class="msg"><?= e($message) ?></p>
 
-    <?php if ($showContact && $email !== ''): ?>
-      <div class="contact">
-        <a class="primary" href="mailto:<?= e($email) ?>">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zm0 0 9 7 9-7"/></svg>
-          Email us
-        </a>
+    <?php if ($showContact): ?>
+      <div class="enq">
+        <p class="note note--ok" id="csOk"<?= $sent ? '' : ' hidden' ?>>
+          <strong>Thank you.</strong> Your enquiry has reached us and we will reply by email.
+        </p>
+        <p class="note note--bad" id="csBad" hidden>
+          That did not send. Please email
+          <a href="mailto:<?= e($email) ?>"><?= e($email) ?></a> instead.
+        </p>
+
+        <form id="csForm" action="/quote-handler.php" method="post"<?= $sent ? ' hidden' : '' ?>>
+          <div class="hp" aria-hidden="true">
+            <label for="company_website">Leave this empty</label>
+            <input type="text" id="company_website" name="company_website" tabindex="-1" autocomplete="off">
+          </div>
+          <input type="hidden" name="started_at" value="<?= time() ?>">
+          <input type="hidden" name="enquiry_source" value="holding">
+
+          <p class="enq__lead">Send us a message and we will come straight back to you.</p>
+
+          <div class="row">
+            <label class="sr" for="cs_name">Your name</label>
+            <input id="cs_name" name="name" type="text" required maxlength="120"
+                   autocomplete="name" placeholder="Your name">
+
+            <label class="sr" for="cs_email">Email address</label>
+            <input id="cs_email" name="email" type="email" required maxlength="180"
+                   autocomplete="email" inputmode="email" placeholder="Email address">
+          </div>
+
+          <label class="sr" for="cs_phone">Phone number, optional</label>
+          <input id="cs_phone" name="phone" type="tel" maxlength="30"
+                 autocomplete="tel" inputmode="tel" placeholder="Phone number (optional)">
+
+          <label class="sr" for="cs_message">Your message</label>
+          <textarea id="cs_message" name="message" required rows="4" maxlength="4000"
+                    placeholder="What can we help with? New trailer, repair, refurbishment or hire."></textarea>
+
+          <label class="consent">
+            <input type="checkbox" name="consent" value="yes" required>
+            <span>I am happy for <?= e($CFG['name']) ?> to contact me about this enquiry.</span>
+          </label>
+
+          <button class="primary" type="submit" id="csSend">Send enquiry</button>
+        </form>
       </div>
     <?php endif; ?>
 
     <p class="foot"><?= e($CFG['address']['locality'] ?? '') ?> &middot; North West</p>
   </main>
+
+<script>
+/* Sends without leaving the page. With scripting off the form posts normally
+   and comes back to /?sent=1, which shows the same thank you. */
+(function () {
+  var form = document.getElementById('csForm');
+  if (!form) return;
+  var ok   = document.getElementById('csOk');
+  var bad  = document.getElementById('csBad');
+  var send = document.getElementById('csSend');
+
+  form.addEventListener('submit', function (e) {
+    if (!form.checkValidity()) return;          // let the browser show its own prompts
+    e.preventDefault();
+
+    send.disabled = true;
+    send.textContent = 'Sending...';
+    bad.hidden = true;
+
+    fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'X-Requested-With': 'fetch' }
+    })
+      .then(function (r) { return r.json().catch(function () { return { ok: r.ok }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.error || 'failed');
+        form.hidden = true;
+        ok.hidden = false;
+        ok.setAttribute('tabindex', '-1');
+        ok.focus({ preventScroll: true });
+      })
+      .catch(function () {
+        bad.hidden = false;
+        send.disabled = false;
+        send.textContent = 'Send enquiry';
+      });
+  });
+})();
+</script>
 
 </body>
 </html>

@@ -34,7 +34,8 @@ function respond(bool $ok, string $error = '', int $code = 200): never
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($ok ? ['ok' => true] : ['ok' => false, 'error' => $error]);
     } else {
-        header('Location: ' . ($ok ? '/thank-you' : $RETURN_PATH . '?error=1'), true, 303);
+        $okPath = (($_POST['enquiry_source'] ?? '') === 'holding') ? '/?sent=1' : '/thank-you';
+        header('Location: ' . ($ok ? $okPath : $RETURN_PATH . '?error=1'), true, 303);
     }
     exit;
 }
@@ -44,10 +45,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     respond(false, 'Method not allowed', 405);
 }
 
-/* No forms are reachable while the holding page is up, so anything arriving
-   here is stale or automated. Refuse it rather than fill the inbox. */
+/* While the holding page is up the only form a visitor can see is the one on it,
+   so that is the only one accepted. Anything else arriving is stale or
+   automated, and is refused rather than left to fill the inbox. */
 require_once __DIR__ . '/inc/coming-soon.php';
-if (coming_soon_on() && !coming_soon_preview()) {
+$fromHolding = (($_POST['enquiry_source'] ?? '') === 'holding');
+if (coming_soon_on() && !coming_soon_preview() && !$fromHolding) {
     respond(false, 'The website is temporarily unavailable.', 503);
 }
 
@@ -138,18 +141,20 @@ $consent = ($_POST['consent'] ?? '') === 'yes';
 /* Which form this came from. Kept separate from $source above, which is the
    customer's answer to how they found us and means something quite different. */
 $enqSource = field('enquiry_source', 40);
-if (!in_array($enqSource, ['quote', 'hire', 'contact', 'general', 'new-trailer', 'repair'], true)) {
+if (!in_array($enqSource, ['quote', 'hire', 'contact', 'holding', 'general', 'new-trailer', 'repair'], true)) {
     $enqSource = 'quote';
 }
 $isHire    = $enqSource === 'hire';
 $isContact = $enqSource === 'contact';
+$isHolding = $enqSource === 'holding';
 if ($isHire)    { $RETURN_PATH = '/catering-trailer-hire'; }
 if ($isContact) { $RETURN_PATH = '/contact'; }
+if ($isHolding) { $RETURN_PATH = '/'; }
 
 /* The stepped quote form is the only one that insists on a phone number. The
    hire and contact forms ask for a written reply by email, so a number there is
    a convenience rather than a requirement. */
-$phoneOptional = $isHire || $isContact;
+$phoneOptional = $isHire || $isContact || $isHolding;
 
 /* Hire enquiries ask a different set of questions. They are gathered into the
    enquiry's "extra" field as readable lines, so the admin area shows them
@@ -303,6 +308,25 @@ if ($isHire) {
     $lines[] = '';
     $lines[] = 'Nothing has been promised to this customer about availability.';
     $body = implode("\r\n", $lines);
+} elseif ($isHolding) {
+    $lines = [
+        'ENQUIRY VIA THE COMING SOON PAGE',
+        str_repeat('=', 52),
+        '',
+        'Name:            ' . $name,
+        'Phone:           ' . ($phone ?: 'not given'),
+        'Email:           ' . $email,
+        '',
+        'MESSAGE',
+        str_repeat('-', 52),
+        $message,
+        '',
+        str_repeat('-', 52),
+        'Sent while the website was showing the holding page.',
+        'Submitted:       ' . date('D j M Y, H:i'),
+        'Source IP:       ' . $ip,
+    ];
+    $body = implode("\r\n", $lines);
 } elseif ($isContact) {
     $lines = [
         'NEW WEBSITE ENQUIRY',
@@ -381,6 +405,7 @@ if ($isHire && db_ready()) {
 $subjectRaw = match (true) {
     $isHire    => 'Hire enquiry: '    . ($jobType ?: 'trailer') . ' - ' . $name,
     $isContact => 'Website enquiry: ' . ($jobType ?: 'general') . ' - ' . $name,
+    $isHolding => 'Enquiry via coming soon page - ' . $name,
     default    => 'Quote enquiry: '   . ($jobType ?: 'trailer') . ' - ' . $name,
 };
 $subject   = '=?UTF-8?B?' . base64_encode(headerSafe($subjectRaw)) . '?=';
@@ -431,11 +456,13 @@ try {
         $storedSource = match (true) {
             $isHire    => 'Trailer Hire',
             $isContact => 'Contact form',
+            $isHolding => 'Coming soon page',
             default    => $enqSource,
         };
         $storedExtra = match (true) {
             $isHire    => implode("\n", $hireExtra),
             $isContact => trim(($cCompany = field('company', 140)) !== '' ? 'Company: ' . $cCompany : ''),
+            $isHolding => 'Sent from the coming soon page while the website was offline.',
             default    => quote_extra_lines($tow),
         };
 

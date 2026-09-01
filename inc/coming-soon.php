@@ -77,8 +77,10 @@ function coming_soon_gate(): void
     $showContact = (string)setting('site.cs_show_contact', '1') === '1';
 
     $email = trim((string)($CFG['enquiry_inbox'] ?? ''));
-    $phone = "";   // the holding page offers email only
     $logo  = trim((string)setting('seo.logo', '')) ?: '/assets/img/logo.png';
+
+    // set when a visitor without JavaScript has just posted the enquiry form
+    $sent = isset($_GET['sent']);
 
     require __DIR__ . '/coming-soon-page.php';
     exit;
