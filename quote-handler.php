@@ -86,6 +86,31 @@ function headerSafe(string $v): string
     return trim(str_replace(["\r", "\n", "\0"], ' ', $v));
 }
 
+/**
+ * The quote form's secondary answers, as readable lines for the enquiry record.
+ * Kept out of the columns because they are notes, not things worth filtering on.
+ */
+function quote_extra_lines(string $tow): string
+{
+    $map = [
+        'Business'          => field('company', 140),
+        'Staff inside'      => field('staff', 40),
+        'Equipment needed'  => field('equipment', 1200),
+        'Gas required'      => field('gas', 20),
+        'Electric required' => field('electric', 20),
+        'Water required'    => field('water', 20),
+        'Serving hatch'     => field('hatch', 200),
+        'Entrance doors'    => field('doors', 200),
+        'Gas/electric notes'=> field('power_notes', 200),
+        'Tows with'         => $tow,
+    ];
+    $out = [];
+    foreach ($map as $label => $value) {
+        if ($value !== '') $out[] = $label . ': ' . $value;
+    }
+    return implode("\n", $out);
+}
+
 $name    = field('name', 120);
 $phone   = field('phone', 30);
 $email   = field('email', 180);
@@ -106,11 +131,18 @@ $consent = ($_POST['consent'] ?? '') === 'yes';
 /* Which form this came from. Kept separate from $source above, which is the
    customer's answer to how they found us and means something quite different. */
 $enqSource = field('enquiry_source', 40);
-if (!in_array($enqSource, ['quote', 'hire', 'general', 'new-trailer', 'repair'], true)) {
+if (!in_array($enqSource, ['quote', 'hire', 'contact', 'general', 'new-trailer', 'repair'], true)) {
     $enqSource = 'quote';
 }
-$isHire = $enqSource === 'hire';
-if ($isHire) { $RETURN_PATH = '/catering-trailer-hire'; }
+$isHire    = $enqSource === 'hire';
+$isContact = $enqSource === 'contact';
+if ($isHire)    { $RETURN_PATH = '/catering-trailer-hire'; }
+if ($isContact) { $RETURN_PATH = '/contact'; }
+
+/* The stepped quote form is the only one that insists on a phone number. The
+   hire and contact forms ask for a written reply by email, so a number there is
+   a convenience rather than a requirement. */
+$phoneOptional = $isHire || $isContact;
 
 /* Hire enquiries ask a different set of questions. They are gathered into the
    enquiry's "extra" field as readable lines, so the admin area shows them
@@ -146,12 +178,23 @@ if (isset($_POST['appliances']) && is_array($_POST['appliances'])) {
     }
 }
 
+/* What the trailer is for, now a tick list rather than free text. Falls back to
+   the old single field so an older cached page still submits correctly. */
+$uses = [];
+if (isset($_POST['uses']) && is_array($_POST['uses'])) {
+    foreach (array_slice($_POST['uses'], 0, 20) as $u) {
+        $u = mb_substr(trim((string)$u), 0, 60);
+        if ($u !== '') $uses[] = $u;
+    }
+}
+if ($uses) { $use = implode(', ', $uses); }
+
 // ── validation ───────────────────────────────────────────────────────────
 $errors = [];
 if (mb_strlen($name) < 2)                              $errors[] = 'name';
 // The hire page asks for a written quotation by email, so a phone number is
 // optional there. When one is given it still has to look like a real number.
-if ($isHire) {
+if ($phoneOptional) {
     if ($phone !== '' && preg_match_all('/\d/', $phone) < 9) $errors[] = 'phone';
 } elseif (preg_match_all('/\d/', $phone) < 9)          $errors[] = 'phone';
 if (!filter_var($email, FILTER_VALIDATE_EMAIL))        $errors[] = 'email';
@@ -253,6 +296,29 @@ if ($isHire) {
     $lines[] = '';
     $lines[] = 'Nothing has been promised to this customer about availability.';
     $body = implode("\r\n", $lines);
+} elseif ($isContact) {
+    $lines = [
+        'NEW WEBSITE ENQUIRY',
+        str_repeat('=', 52),
+        '',
+        'Name:            ' . $name,
+        'Company:         ' . (field('company', 140) ?: '-'),
+        'Phone:           ' . ($phone ?: 'not given'),
+        'Email:           ' . $email,
+        'Postcode:        ' . ($town ?: '-'),
+        'Enquiry type:    ' . ($jobType ?: '-'),
+        '',
+        'MESSAGE',
+        str_repeat('-', 52),
+        $message,
+        '',
+        str_repeat('-', 52),
+        'Images attached: ' . count($saved),
+    ];
+    if ($uploadNote !== '') $lines[] = 'Note: ' . $uploadNote;
+    $lines[] = 'Submitted:       ' . date('D j M Y, H:i');
+    $lines[] = 'Source IP:       ' . $ip;
+    $body = implode("\r\n", $lines);
 } else {
 $lines = [
     'NEW QUOTE ENQUIRY',
@@ -270,8 +336,13 @@ $lines = [
     'Tow vehicle:     ' . ($tow ?: '-'),
     '',
     'Power:           ' . ($power ?: '-'),
-    'Power notes:     ' . ($pNotes ?: '-'),
     'Appliances:      ' . ($appliances ? implode(', ', $appliances) : 'none selected'),
+    '',
+];
+foreach (explode("\n", quote_extra_lines($tow)) as $l) {
+    if (trim($l) !== '') $lines[] = $l;
+}
+$lines = array_merge($lines, [
     '',
     'Budget:          ' . ($budget ?: 'not given'),
     'Required date:   ' . ($reqDate ?: 'not given'),
@@ -283,7 +354,7 @@ $lines = [
     '',
     str_repeat('-', 52),
     'Photos attached: ' . count($saved),
-];
+]);
 if ($uploadNote !== '') $lines[] = 'Note: ' . $uploadNote;
 $lines[] = 'Submitted:       ' . date('D j M Y, H:i');
 $lines[] = 'Source IP:       ' . $ip;
@@ -300,9 +371,11 @@ if ($isHire && db_ready()) {
     if ($hireTo !== '' && filter_var($hireTo, FILTER_VALIDATE_EMAIL)) $to = $hireTo;
 }
 
-$subjectRaw = $isHire
-    ? 'Hire enquiry: ' . ($jobType ?: 'trailer') . ' - ' . $name
-    : 'Quote enquiry: ' . ($jobType ?: 'trailer') . ' - ' . $name;
+$subjectRaw = match (true) {
+    $isHire    => 'Hire enquiry: '    . ($jobType ?: 'trailer') . ' - ' . $name,
+    $isContact => 'Website enquiry: ' . ($jobType ?: 'general') . ' - ' . $name,
+    default    => 'Quote enquiry: '   . ($jobType ?: 'trailer') . ' - ' . $name,
+};
 $subject   = '=?UTF-8?B?' . base64_encode(headerSafe($subjectRaw)) . '?=';
 
 // The envelope sender must be a real mailbox on this domain or the host will
@@ -348,10 +421,16 @@ $parts[] = "--{$boundary}--";
 $enquiryId = null;
 try {
     if (db_ready()) {
-        $storedSource = $isHire ? 'Trailer Hire' : $enqSource;
-        $storedExtra  = $isHire
-            ? implode("\n", $hireExtra)
-            : trim($pNotes . ($tow !== '' ? ' | tows with: ' . $tow : ''));
+        $storedSource = match (true) {
+            $isHire    => 'Trailer Hire',
+            $isContact => 'Contact form',
+            default    => $enqSource,
+        };
+        $storedExtra = match (true) {
+            $isHire    => implode("\n", $hireExtra),
+            $isContact => trim(($cCompany = field('company', 140)) !== '' ? 'Company: ' . $cCompany : ''),
+            default    => quote_extra_lines($tow),
+        };
 
         q("INSERT INTO enquiries
            (created_at, source, name, phone, email, town, job_type, body_length, axle,

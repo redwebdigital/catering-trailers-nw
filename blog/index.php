@@ -4,11 +4,21 @@ require_once __DIR__ . '/../inc/bootstrap.php';
 
 $POSTS = require __DIR__ . '/../inc/posts.php';
 
+$SLUG = '/blog';
+
+/* Only categories that actually have something in them are shown. The full
+   taxonomy lives here so a new article can be filed without a code change. */
+$CATEGORIES = ['Buying a Catering Trailer', 'Trailer Design', 'Equipment & Fit-Out',
+               'Repairs & Maintenance', 'Mobile Food Business', 'Trailer Hire', 'Mobile Bars'];
+$used = array_unique(array_column($POSTS, 'category'));
+$LIVE_CATEGORIES = array_values(array_intersect($CATEGORIES, $used));
+
 $PAGE = [
-  'title'       => 'Blog | Advice for Mobile Catering Traders | Catering Trailers NW',
-  'description' => 'Practical advice on buying, running and maintaining a catering trailer in the UK. Costs, certificates, towing weights and what actually goes wrong.',
-  'path'        => '/blog',
+  'title'       => 'Catering Trailer Advice & Guides | Blog',
+  'description' => 'Practical catering trailer advice covering new builds, layouts, equipment, maintenance, repairs, refurbishments and mobile food businesses.',
+  'path'        => $SLUG,
   'nav'         => 'blog',
+  'crumbs'      => ['Home' => '/', 'Advice & Guides' => $SLUG],
   'schema'      => [
     schema_breadcrumbs(['Home' => '/', 'Blog' => '/blog']),
     [
@@ -33,11 +43,18 @@ require __DIR__ . '/../inc/header.php';
 
 <section class="band band--tight">
   <div class="wrap">
-    <div class="rise" style="max-width:62ch">
-      <p class="kicker">Blog</p>
-      <h1>What we tell traders before they spend</h1>
-      <p class="lede">Practical answers to the questions that cost people money when they
-         get them wrong. No filler.</p>
+    <div class="rise" style="max-width:64ch">
+      <p class="kicker">Advice and guides</p>
+      <h1><?= e(page_h1($SLUG, 'Catering Trailer Advice & Guides')) ?></h1>
+      <p class="lede">Useful information for anyone buying, operating, repairing or upgrading
+         a catering trailer.</p>
+      <p class="lede">Our guides cover trailer design, equipment, layouts, repairs,
+         refurbishments and mobile catering businesses.</p>
+      <?php if ($LIVE_CATEGORIES): ?>
+        <ul class="taglist" style="margin-top:1.6rem">
+          <?php foreach ($LIVE_CATEGORIES as $c): ?><li><?= e($c) ?></li><?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
     </div>
   </div>
 </section>

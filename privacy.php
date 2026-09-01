@@ -1,15 +1,33 @@
 <?php
+/**
+ * Privacy policy.
+ *
+ * Written from what this website actually does rather than from a template.
+ * The tracking sections appear only when that tracking is genuinely switched on
+ * in the admin area, so the policy cannot claim something that is not happening,
+ * and cannot go stale when the owner turns something on or off.
+ */
+
 declare(strict_types=1);
 require_once __DIR__ . '/inc/bootstrap.php';
 
-$a = $CFG['address'];
+$SLUG = '/privacy';
+$a    = $CFG['address'];
+
+$ga4    = trim((string)setting('track.ga4', ''));
+$gtm    = trim((string)setting('track.gtm', ''));
+$pixel  = trim((string)setting('track.meta_pixel', ''));
+$anyAnalytics = ($ga4 !== '' || $gtm !== '');
+$anyTracking  = $anyAnalytics || $pixel !== '';
 
 $PAGE = [
   'title'       => 'Privacy Policy | Catering Trailers NW',
-  'description' => 'How Catering Trailers NW handles the information you send through the website, how long we keep it, and your rights under UK GDPR.',
-  'path'        => '/privacy',
+  'description' => 'Privacy information for visitors and customers of Catering Trailers NW.',
+  'path'        => $SLUG,
   'nav'         => '',
-  'schema'      => [schema_breadcrumbs(['Home' => '/', 'Privacy' => '/privacy'])],
+  'crumbs'      => ['Home' => '/', 'Privacy' => $SLUG],
+  'hide_cta'    => true,
+  'schema'      => [schema_breadcrumbs(['Home' => '/', 'Privacy' => $SLUG])],
 ];
 
 require __DIR__ . '/inc/header.php';
@@ -19,9 +37,11 @@ require __DIR__ . '/inc/header.php';
   <div class="wrap wrap--narrow">
     <div class="rise">
       <p class="kicker">Privacy</p>
-      <h1>Privacy policy</h1>
-      <p class="lede">Plain English, because a policy nobody can read protects nobody.
-         Last updated <?= e(date('j F Y')) ?>.</p>
+      <h1><?= e(page_h1($SLUG, 'Privacy Policy')) ?></h1>
+      <p class="lede">This page explains what personal information
+         <?= e($CFG['name']) ?> collects through this website, why we collect it, how long we
+         keep it and what you can ask us to do with it.</p>
+      <p class="hint">Last updated <?= e(date('j F Y', filemtime(__FILE__))) ?>.</p>
     </div>
   </div>
 </section>
@@ -30,62 +50,129 @@ require __DIR__ . '/inc/header.php';
   <div class="wrap wrap--narrow prose rise">
 
     <h2>Who we are</h2>
-    <p><?= e($CFG['legal_name']) ?>, <?= e($a['street']) ?>, <?= e($a['locality']) ?>,
-       <?= e($a['postcode']) ?>. You can reach us at
-       <a href="mailto:<?= e($CFG['email']) ?>"><?= e($CFG['email']) ?></a> or
-       <?= e($CFG['phone_display']) ?>. We are the data controller for the information
-       described here.</p>
+    <p><?= e($CFG['name']) ?> builds, repairs and refurbishes catering trailers.
+       We are the data controller for the information described on this page.</p>
+    <p>
+      <?= e($a['street']) ?>, <?= e($a['locality']) ?>, <?= e($a['postcode']) ?><br>
+      <a href="mailto:<?= e($CFG['enquiry_inbox']) ?>"><?= e($CFG['enquiry_inbox']) ?></a>
+      <?php if (!empty($CFG['phone_display'])): ?>
+        &middot; <?= e($CFG['phone_display']) ?>
+      <?php endif; ?>
+    </p>
 
-    <h2>What we collect, and why</h2>
-    <p>Only what you send us. If you fill in the quote form that means your name, phone
-       number, email address, the town you are in, the details of the trailer or repair you
-       are asking about, and any photographs you attach.</p>
-    <p>We use it for one thing: to prepare your quote and reply to you. The lawful basis is
-       taking steps at your request before entering into a contract, and our legitimate
-       interest in responding to enquiries about our own services.</p>
+    <h2>What we collect, and when</h2>
 
-    <h2>Photographs you upload</h2>
-    <p>Photographs attached to the quote form are stored on our web hosting in a directory
-       that is not reachable from the internet, and are emailed to us. We delete them once
-       the enquiry is closed or the job is finished.</p>
-
-    <h2>What we do not do</h2>
+    <h3>Enquiries and quote requests</h3>
+    <p>When you complete the
+       <a href="/request-a-quote">quote form</a>,
+       the <a href="/contact">contact form</a> or the
+       <a href="/catering-trailer-hire">hire enquiry form</a>, we receive whatever you type
+       into it. Depending on the form, that can include:</p>
     <ul>
-      <li>We do not sell or rent your details to anyone.</li>
-      <li>We do not add you to a marketing list because you asked for a quote.</li>
-      <li>We do not use advertising or tracking cookies on this website.</li>
-      <li>We do not run analytics that profile you across other websites.</li>
+      <li>your name and, if you give one, your business name</li>
+      <li>your email address</li>
+      <li>your phone number, which is optional on the contact and hire forms</li>
+      <li>your town or postcode</li>
+      <li>details of the trailer, menu, equipment, dates and budget you describe</li>
+      <li>anything else you choose to write in the message box</li>
     </ul>
+    <p>We use this to answer your enquiry, prepare a quotation and carry out any work you go
+       on to order. The lawful basis is our legitimate interest in responding to people who
+       contact us about our services, and, once you place an order, performance of a contract
+       with you.</p>
 
-    <h2>Cookies</h2>
-    <p>This site sets no cookies of its own and there is no cookie banner because there is
-       nothing to consent to. Fonts are loaded from Google Fonts, which means your browser
-       requests those font files from Google and Google will see your IP address as part of
-       that request. Nothing else leaves the site.</p>
+    <h3>Photographs and files you upload</h3>
+    <p>The forms let you attach images. Those files are stored on our web hosting in a folder
+       that is not reachable from the public internet, and are also attached to the enquiry
+       email sent to us. We use them only to understand and quote for your job. Please do not
+       upload photographs containing other people's personal information.</p>
+
+    <h3>Technical information</h3>
+    <p>Our web host records standard server logs, which include the IP address making each
+       request. We also store the IP address alongside each enquiry, which lets us identify
+       and block automated abuse of the forms. This is our legitimate interest in keeping the
+       site working and our inbox usable.</p>
+
+    <h3>Cookies</h3>
+    <?php if ($anyTracking): ?>
+      <p>The tracking described below sets cookies in your browser. You can block or delete
+         cookies in your browser settings; the site will still work.</p>
+    <?php else: ?>
+      <p>This website does not set any advertising or analytics cookies for visitors. The
+         only cookie the site can set is a session cookie for the private staff area, which
+         is never issued to ordinary visitors.</p>
+    <?php endif; ?>
+
+    <h2>Analytics and tracking</h2>
+    <?php if (!$anyTracking): ?>
+      <p>At the time this page was generated, no analytics or advertising tracking is enabled
+         on this website. We do not use Google Analytics, Google Tag Manager or the Meta
+         Pixel. This section updates automatically if that changes.</p>
+    <?php else: ?>
+      <p>The following third-party services are currently enabled on this website:</p>
+      <ul>
+        <?php if ($ga4 !== ''): ?>
+          <li><strong>Google Analytics.</strong> Provided by Google, this records which pages
+              are visited and how people arrive at the site, so we can see what is useful.
+              Google acts as our processor for this data.</li>
+        <?php endif; ?>
+        <?php if ($gtm !== ''): ?>
+          <li><strong>Google Tag Manager.</strong> A container used to load the measurement
+              tags listed here.</li>
+        <?php endif; ?>
+        <?php if ($pixel !== ''): ?>
+          <li><strong>Meta Pixel.</strong> Provided by Meta, used to measure the response to
+              our advertising. It can be used by Meta to show you advertising elsewhere.</li>
+        <?php endif; ?>
+      </ul>
+      <p>These services are operated by companies outside our control and may transfer data
+         outside the UK under their own safeguards. Their own privacy notices explain what
+         they do with it.</p>
+    <?php endif; ?>
 
     <h2>Who else sees your information</h2>
-    <p>Our web host, which stores the website and delivers our email, and nobody else.
-       If your enquiry is insurance work we will share what is needed with your insurer or
-       their assessor, but only because that is the job you asked us to do.</p>
+    <ul>
+      <li><strong>Our web host</strong> stores this website, its database and the files you
+          upload, and delivers the email our forms send.</li>
+      <li><strong>Our email provider</strong> receives and stores enquiry emails.</li>
+      <?php if ($anyTracking): ?>
+        <li><strong>The analytics providers listed above.</strong></li>
+      <?php endif; ?>
+      <li><strong>Suppliers and subcontractors</strong>, but only where a specific job makes
+          that necessary, and only the details needed for it.</li>
+    </ul>
+    <p>We do not sell your personal information, and we do not share it for anyone else's
+       marketing.</p>
 
     <h2>How long we keep it</h2>
-    <p>Quote enquiries that do not become jobs are kept for up to two years, so we can pick
-       up the conversation if you come back to us. Records relating to work we actually
-       carried out are kept for six years, which is what our insurers and HMRC expect.</p>
+    <ul>
+      <li><strong>Enquiries that do not become work:</strong> kept while they may still be
+          useful, and reviewed periodically.</li>
+      <li><strong>Enquiries that become an order:</strong> kept for as long as we may need
+          them for the job, any warranty question and our accounting and tax obligations.</li>
+      <li><strong>Uploaded photographs:</strong> deleted along with the enquiry they belong
+          to.</li>
+      <li><strong>Server logs:</strong> kept for the short period set by our web host.</li>
+    </ul>
 
     <h2>Your rights</h2>
-    <p>Under UK GDPR you can ask us for a copy of what we hold about you, ask us to correct
-       it, ask us to delete it, or object to how we are using it. Email
-       <a href="mailto:<?= e($CFG['email']) ?>"><?= e($CFG['email']) ?></a> and we will deal
-       with it within one month.</p>
-    <p>If you are not happy with how we have handled it you can complain to the Information
-       Commissioner's Office at ico.org.uk, or on 0303 123 1113.</p>
+    <p>Under UK data protection law you can ask us to:</p>
+    <ul>
+      <li>give you a copy of the personal information we hold about you</li>
+      <li>correct anything that is wrong</li>
+      <li>delete your information, where we do not need to keep it</li>
+      <li>restrict or object to how we use it</li>
+      <li>provide it in a portable format</li>
+    </ul>
+    <p>Email <a href="mailto:<?= e($CFG['enquiry_inbox']) ?>"><?= e($CFG['enquiry_inbox']) ?></a>
+       and we will respond within one month. There is no charge.</p>
+    <p>If you are unhappy with how we have handled your information you can complain to the
+       Information Commissioner's Office at
+       <a href="https://ico.org.uk" rel="noopener">ico.org.uk</a>.</p>
 
-    <h2>Security</h2>
-    <p>The site is served over HTTPS. Form submissions are validated and rate limited, and
-       uploaded files are checked before they are stored. No system is perfect, but we do
-       not collect payment details or anything else through this website that would be
-       worth attacking it for.</p>
+    <h2>Changes to this page</h2>
+    <p>The tracking sections above reflect what is switched on right now, so this page changes
+       when our setup changes. Any larger revision will be noted by the date at the top.</p>
 
   </div>
 </section>

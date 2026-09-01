@@ -11,7 +11,8 @@ $fields = [
   '_h1' => ['label' => 'Homepage hero', 'type' => 'heading',
             'hint' => 'The first thing a visitor reads, and worth more than the rest of the page put together.'],
   'content.hero_kicker'  => ['label' => 'Small label above the heading', 'type' => 'text', 'count' => 30],
-  'content.hero_heading' => ['label' => 'Hero heading', 'type' => 'text', 'count' => 60],
+  'content.hero_heading' => ['label' => 'Hero heading', 'type' => 'text', 'count' => 60,
+      'hint' => 'Only used if the Home page H1 under Pages & SEO is left blank. That field wins, so edit it there unless you have cleared it.'],
   'content.hero_sub'     => ['label' => 'Hero introduction', 'type' => 'textarea', 'rows' => 3, 'count' => 180],
   'content.hero_cta'     => ['label' => 'Main button text', 'type' => 'text', 'count' => 24],
 

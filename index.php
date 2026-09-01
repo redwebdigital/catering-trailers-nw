@@ -39,7 +39,7 @@ require __DIR__ . '/inc/header.php';
 $OVH = page_seo('/');
 $HERO_H1 = $OVH['h1'] ?? '';
 if ($HERO_H1 === '') { $HERO_H1 = $OVH['hero_head'] ?? ''; }
-if ($HERO_H1 === '') { $HERO_H1 = copytext('hero_heading', 'Bespoke Catering Trailers Built in the North West'); }
+if ($HERO_H1 === '') { $HERO_H1 = copytext('hero_heading', 'Bespoke Catering Trailers Built for Your Business'); }
 ?>
 
 <!-- ═══ HERO ═══════════════════════════════════════════════════════════ -->
@@ -58,13 +58,11 @@ if ($HERO_H1 === '') { $HERO_H1 = copytext('hero_heading', 'Bespoke Catering Tra
       <p class="kicker"><?= e(copytext('hero_kicker', 'Built in the North West')) ?></p>
       <h1><?= e($HERO_H1) ?></h1>
       <p class="hero--still__lede"><?= e(copytext('hero_sub',
-        'Built to your menu, not off a shelf. New builds, repairs and refits for street food traders, burger vans and coffee trailers.')) ?></p>
+        'Professional catering trailers designed around your menu, equipment and working layout. Whether you are starting a new mobile food business, replacing an older unit or expanding an existing operation, we can help you create a trailer designed around the way you actually work.')) ?></p>
 
       <div class="btn-row">
         <a class="btn btn--accent btn--lg" href="/request-a-quote"><?= e(copytext('hero_cta', 'Request a Quote')) ?></a>
-        <a class="btn btn--ghost btn--lg" href="<?= e(tel_href()) ?>" data-track="call-hero">
-          Call <?= e($CFG['phone_display']) ?>
-        </a>
+        <a class="btn btn--ghost btn--lg" href="/new-catering-trailers">View New Catering Trailers</a>
         <a class="btn btn--wa btn--lg" href="<?= e(whatsapp_href()) ?>" target="_blank" rel="noopener">
           WhatsApp
         </a>
@@ -99,12 +97,21 @@ if ($HERO_H1 === '') { $HERO_H1 = copytext('hero_heading', 'Bespoke Catering Tra
 <!-- ═══ THE TWO DOORS ══════════════════════════════════════════════════ -->
 <section class="band" aria-labelledby="doors-h">
   <div class="wrap">
-    <div class="rise">
-      <p class="kicker">Two ways we help</p>
-      <h2 id="doors-h">A new trailer, or the one you already own</h2>
-      <p class="lede">Most people arrive one of two ways. Either they are starting out and
-         need a unit building around their menu, or they have a trailer off the road and
-         need it back out this week.</p>
+    <div class="rise" style="max-width:72ch">
+      <p class="kicker">What we do</p>
+      <h2 id="doors-h">Professional Catering Trailer Builders in the North West</h2>
+      <p class="lede">Catering Trailers NW designs and builds bespoke catering trailers for
+         street-food traders, mobile caterers, coffee businesses, event operators and
+         established hospitality companies.</p>
+      <p class="lede">Every business is different, which is why we do not believe in forcing
+         customers into one standard layout. We can plan your trailer around your menu,
+         appliances, number of staff, serving position and preferred workflow.</p>
+      <p class="lede">Depending on your requirements, your trailer can incorporate serving
+         hatches, entrance doors, stainless steel work surfaces, sinks, refrigeration, cooking
+         equipment, extraction, electrical systems, water storage and purpose-built storage
+         areas.</p>
+      <p class="lede">Our aim is simple: to create a trailer that looks professional and works
+         properly when your business is busy.</p>
     </div>
 
     <div class="doors rise" style="margin-top:2.6rem">
@@ -114,9 +121,11 @@ if ($HERO_H1 === '') { $HERO_H1 = copytext('hero_heading', 'Bespoke Catering Tra
              'New bespoke catering trailer with the serving hatch raised',
              ['sizes' => '(max-width:900px) 100vw, 58vw', 'widths' => [480,800,1200]]) ?>
         <h3>New Catering Trailers</h3>
-        <p>Built around your menu, your appliances and the pitch you are trading from.
-           Single or twin axle, 2.4m up to 4.2m, stainless throughout.</p>
-        <span class="door__go">See how we build them
+        <p>Starting from a blank canvas gives you the opportunity to create a catering trailer
+           around your exact business. We can discuss trailer size, single or twin axle
+           configurations, serving hatch locations, doors, equipment layout and internal
+           working space.</p>
+        <span class="door__go">Explore New Catering Trailers
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8.8 2.4 14.4 8l-5.6 5.6-1.1-1.1 3.7-3.7H1.6V7.2h9.8L7.7 3.5z"/></svg>
         </span>
       </a>
@@ -125,14 +134,42 @@ if ($HERO_H1 === '') { $HERO_H1 = copytext('hero_heading', 'Bespoke Catering Tra
         <?= picture('catering-trailer-side-elevation',
              'Catering trailer side elevation before repair work',
              ['sizes' => '(max-width:900px) 100vw, 40vw', 'widths' => [480,800,1200]]) ?>
-        <h3>Trailer Repairs</h3>
-        <p>Chassis, panels, hatches, gas pipework, electrics and accident damage.
-           Any make, whoever built it.</p>
-        <span class="door__go">Get it back on the road
+        <h3>Catering Trailer Repairs</h3>
+        <p>Damage, wear and ageing components can quickly affect the appearance and operation
+           of a catering trailer. We can assist with body damage, serving hatches, doors,
+           interior fittings, flooring, chassis-related work and electrical issues.</p>
+        <span class="door__go">View Catering Trailer Repairs
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8.8 2.4 14.4 8l-5.6 5.6-1.1-1.1 3.7-3.7H1.6V7.2h9.8L7.7 3.5z"/></svg>
         </span>
       </a>
 
+    </div>
+
+    <p class="hint rise" style="margin-top:1.4rem">
+      If possible, upload photographs when
+      <a href="/request-a-quote" style="color:var(--accent-hover)">requesting a quote</a>
+      so we can get a better understanding of the work required.
+    </p>
+
+    <div class="why rise stagger" style="margin-top:2.6rem">
+      <div class="why__item"><span class="why__n">01</span>
+        <h3>Trailer Refurbishments &amp; Upgrades</h3>
+        <p>Not every trailer needs replacing. If the basic structure of your existing trailer
+           is suitable, refurbishment can be an effective way to improve its appearance,
+           working layout and equipment. Upgrades can include new worktops, storage, flooring,
+           lighting, electrics, water systems, hatches, doors and equipment installation.</p>
+        <p><a href="/refurbishments-upgrades" style="color:var(--accent-hover)">View Refurbishments &amp; Upgrades</a></p>
+      </div>
+      <div class="why__item"><span class="why__n">02</span>
+        <h3>Catering Trailer Hire &amp; Mobile Bars</h3>
+        <p>For events, temporary requirements and short-term hospitality projects, catering
+           trailer and mobile bar hire may also be available. Hire can be useful for festivals,
+           events, seasonal trading, temporary kitchens and businesses waiting for a permanent
+           solution.</p>
+        <p>If you expect to trade regularly, we can also discuss building a bespoke trailer
+           specifically for your business.</p>
+        <p><a href="/catering-trailer-hire" style="color:var(--accent-hover)">View Trailer Hire</a></p>
+      </div>
     </div>
   </div>
 </section>
@@ -141,51 +178,34 @@ if ($HERO_H1 === '') { $HERO_H1 = copytext('hero_heading', 'Bespoke Catering Tra
 <!-- ═══ WHY US ═════════════════════════════════════════════════════════ -->
 <section class="band band--well" aria-labelledby="why-h">
   <div class="wrap">
-    <div class="rise">
-      <p class="kicker">Why traders choose us</p>
-      <h2 id="why-h">The things that actually go wrong, handled</h2>
-      <p class="lede">We asked traders what went wrong last time. These are the answers,
-         in the order they came up.</p>
+    <div class="rise" style="max-width:72ch">
+      <p class="kicker">How we plan a build</p>
+      <h2 id="why-h">Built Around the Way You Work</h2>
+      <p class="lede">A catering trailer needs to do more than look good.</p>
+      <p class="lede">When several people are working inside, every appliance, worktop,
+         storage area and serving point needs to be positioned properly.</p>
+      <p class="lede">Before planning a new build we want to understand:</p>
     </div>
 
-    <div class="why rise stagger" style="margin-top:2.6rem">
-      <div class="why__item">
-        <span class="why__n">01</span>
-        <h3>It passes, first time</h3>
-        <p>Stainless throughout, sealed joints, hot and cold water and a wash hand basin.
-           Built to what your environmental health officer will actually look for.</p>
-      </div>
-      <div class="why__item">
-        <span class="why__n">02</span>
-        <h3>Certificates in your hand</h3>
-        <p>Gas Safe and electrical certificates handed over on collection day, not
-           chased for weeks afterwards while your pitch sits empty.</p>
-      </div>
-      <div class="why__item">
-        <span class="why__n">03</span>
-        <h3>A date you can plan around</h3>
-        <p><?= e($CFG['lead_time']) ?> for most builds. We tell you the real date at the
-           start and we tell you early if anything moves.</p>
-      </div>
-      <div class="why__item">
-        <span class="why__n">04</span>
-        <h3>A chassis that lasts</h3>
-        <p>Hot dip galvanised and warranted <?= e($CFG['chassis_warranty']) ?> against
-           corrosion. Rot is what kills resale value on a cheap trailer.</p>
-      </div>
-      <div class="why__item">
-        <span class="why__n">05</span>
-        <h3>We check your towing weight</h3>
-        <p>Tell us your vehicle before we build. Getting this wrong is the single most
-           common and most expensive mistake in the trade.</p>
-      </div>
-      <div class="why__item">
-        <span class="why__n">06</span>
-        <h3>Repairs get priority</h3>
-        <p>A trailer off the road is lost income. Send photos the day it happens and
-           we will tell you the same day what it takes to fix.</p>
-      </div>
-    </div>
+    <ul class="clean-list clean-list--cols rise" style="margin-top:1.6rem;max-width:72ch">
+      <?php foreach ([
+          'What food or drinks you will sell',
+          'What equipment you need',
+          'How many staff will work inside',
+          'How customers will be served',
+          'Whether you need gas, electricity or both',
+          'Your refrigeration requirements',
+          'Fresh and waste water requirements',
+          'Storage requirements',
+          'Your preferred trailer size',
+          'Your tow vehicle where relevant',
+      ] as $q): ?>
+        <li><?= e($q) ?></li>
+      <?php endforeach; ?>
+    </ul>
+
+    <p class="lede rise" style="margin-top:1.6rem;max-width:72ch">Getting these details right
+       at the beginning can make a major difference to the finished trailer.</p>
   </div>
 </section>
 
@@ -195,7 +215,7 @@ if ($HERO_H1 === '') { $HERO_H1 = copytext('hero_heading', 'Bespoke Catering Tra
   <div class="wrap">
     <div class="rise">
       <p class="kicker">How a build runs</p>
-      <h2 id="proc-h"><?= e(copytext('builder_heading', 'From your menu to your pitch')) ?></h2>
+      <h2 id="proc-h"><?= e(copytext('builder_heading', 'From Your Menu to Your Pitch')) ?></h2>
       <p class="lede"><?= e(copytext('builder_intro', 'Five stages. You know where your trailer is at every one of them.')) ?></p>
     </div>
 
@@ -207,11 +227,11 @@ if ($HERO_H1 === '') { $HERO_H1 = copytext('hero_heading', 'Bespoke Catering Tra
       $STAGES = builder_stages();
       if (!$STAGES) {
           $STAGES = [
-            ['title' => 'We take your spec', 'body' => 'Your menu, your appliances, your pitch and your tow vehicle. Twenty minutes on the phone saves weeks later.'],
-            ['title' => 'Drawings and a fixed price', 'body' => 'A layout drawing and a written quote with nothing hidden. Change it as many times as you like before you commit.'],
-            ['title' => 'Chassis and shell', 'body' => 'Galvanised chassis, insulated body, hatch and door openings cut and framed. Photographs sent as it goes.'],
-            ['title' => 'Fit-out, gas and electrics', 'body' => 'Stainless surfaces, appliances installed, gas pipework and electrics run, then tested and certified.'],
-            ['title' => 'Handover', 'body' => 'We walk you round it, hand you both certificates, and show you how everything works before you tow away.'],
+            ['title' => 'Your Requirements',      'body' => 'Tell us about your menu, equipment, pitch, trailer size and how you intend to use the trailer.'],
+            ['title' => 'Layout & Specification', 'body' => 'We develop the proposed trailer specification and layout around your requirements.'],
+            ['title' => 'Chassis & Shell',        'body' => 'The chassis, body, hatch and door openings are prepared to suit the agreed build.'],
+            ['title' => 'Fit-Out',                'body' => 'Work surfaces, equipment, gas, electrics, water systems and other internal features are installed as required.'],
+            ['title' => 'Handover',               'body' => 'Once the trailer is complete, the finished build is checked and prepared for handover.'],
           ];
       }
       ?>
@@ -455,9 +475,13 @@ if ($HERO_H1 === '') { $HERO_H1 = copytext('hero_heading', 'Bespoke Catering Tra
   <div class="wrap">
     <div class="rise">
       <p class="kicker">Areas we cover</p>
-      <h2 id="areas-h">Across the North West</h2>
-      <p class="lede">We build and repair for traders throughout the North West, and we
-         collect and deliver. If your town is not listed, ask anyway.</p>
+      <h2 id="areas-h">Catering Trailers Across the North West</h2>
+      <p class="lede">Catering Trailers NW serves customers across Warrington and the wider
+         North West.</p>
+      <p class="lede">We welcome enquiries from areas including Manchester, Liverpool,
+         Cheshire, Widnes, Runcorn, St Helens, Wigan, Bolton, Northwich, Knutsford and
+         Altrincham. If your location is not listed, you can still send us your
+         requirements.</p>
     </div>
 
     <div class="areas rise stagger" style="margin-top:2.4rem">
@@ -468,7 +492,27 @@ if ($HERO_H1 === '') { $HERO_H1 = copytext('hero_heading', 'Bespoke Catering Tra
         </a>
       <?php endforeach; ?>
     </div>
+
+    <div class="btn-row rise" style="margin-top:2rem">
+      <a class="btn btn--ghost" href="/areas">View Areas We Cover</a>
+    </div>
   </div>
 </section>
 
-<?php require __DIR__ . '/inc/footer.php'; ?>
+<!-- ═══ FINAL CALL TO ACTION ═══════════════════════════════════════════ -->
+<section class="cta band" aria-labelledby="hcta-h">
+  <div class="wrap cta__in rise">
+    <p class="kicker" style="justify-content:center">Next step</p>
+    <h2 id="hcta-h">Planning a Catering Trailer?</h2>
+    <p>Tell us about your menu, trailer size, equipment and what you want to achieve.</p>
+    <p>The more information you provide, the better we can understand your project.</p>
+    <div class="btn-row" style="justify-content:center">
+      <a class="btn btn--accent btn--lg" href="/request-a-quote">Request a Quote</a>
+      <a class="btn btn--ghost btn--lg" href="/new-catering-trailers">View New Catering Trailers</a>
+    </div>
+  </div>
+</section>
+
+<?php
+$PAGE['hide_cta'] = true;
+require __DIR__ . '/inc/footer.php';

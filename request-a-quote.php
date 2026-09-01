@@ -11,12 +11,27 @@ $APPLIANCES = ['Griddle','Fryer','Char grill','Six burner range','Pizza oven','O
                'Bain marie','Hot cupboard','Espresso machine','Water boiler','Fridge',
                'Freezer','Extraction canopy','Wash hand basin','Twin sink','Water heater'];
 
+$SLUG = '/request-a-quote';
+
+/* Enquiry types are shared with the contact form and managed under Quote
+   Builder, so a new one appears on both without a code change. */
+$ENQ_TYPES = array_values(array_filter(array_map(
+    fn($r) => trim((string)($r['label'] ?? '')), builder_options('enquiry_type')
+))) ?: ['New Catering Trailer', 'Repair', 'Refurbishment', 'Trailer Hire',
+        'Mobile Bar', 'Other'];
+
+$USES = array_values(array_filter(array_map(
+    fn($r) => trim((string)($r['label'] ?? '')), builder_options('use')
+))) ?: ['Burgers','Coffee','Pizza','Fried Chicken','Desserts','Breakfast',
+        'Mobile Bar','General Catering','Other'];
+
 $PAGE = [
-  'title'       => 'Request a Quote | Catering Trailers NW',
-  'description' => 'Tell us your size, your menu and your budget and we will come back with a real price and a real build date. Photo uploads welcome. Quotes usually within one working day.',
-  'path'        => '/request-a-quote',
+  'title'       => 'Request a Catering Trailer Quote | Catering Trailers NW',
+  'description' => 'Request a quote for a new catering trailer, repair, refurbishment, mobile bar or trailer hire from Catering Trailers NW.',
+  'path'        => $SLUG,
   'nav'         => '',
-  'schema'      => [schema_breadcrumbs(['Home' => '/', 'Request a Quote' => '/request-a-quote'])],
+  'crumbs'      => ['Home' => '/', 'Request a Quote' => $SLUG],
+  'schema'      => [schema_breadcrumbs(['Home' => '/', 'Request a Quote' => $SLUG])],
 ];
 
 require __DIR__ . '/inc/header.php';
@@ -24,13 +39,13 @@ require __DIR__ . '/inc/header.php';
 
 <section class="band band--tight">
   <div class="wrap">
-    <div class="rise" style="max-width:60ch">
+    <div class="rise" style="max-width:64ch">
       <p class="kicker">Request a quote</p>
-      <h1>Tell us what you need building</h1>
-      <p class="lede">Five short steps. The more you tell us, the more accurate the price.
-         If you would rather talk it through, call
-         <a href="<?= e(tel_href()) ?>" style="color:var(--accent-hover)"><?= e($CFG['phone_display']) ?></a>
-         and we will take the details over the phone.</p>
+      <h1><?= e(page_h1($SLUG, 'Request a Catering Trailer Quote')) ?></h1>
+      <p class="lede">Tell us as much as possible about what you need.</p>
+      <p class="lede">For new builds, information about your menu and equipment is extremely
+         useful. For repairs or refurbishments, upload photographs of the existing trailer
+         where possible.</p>
     </div>
   </div>
 </section>
@@ -82,31 +97,38 @@ require __DIR__ . '/inc/header.php';
             <p class="err" data-err="phone" hidden>We need a number we can call you back on.</p>
           </div>
         </div>
-        <div class="field">
-          <label for="email">Email address <span class="req" aria-hidden="true">*</span></label>
-          <input class="input" type="email" id="email" name="email" required
-                 autocomplete="email" inputmode="email" maxlength="180">
-          <p class="err" data-err="email" hidden>That email address does not look right.</p>
+        <div class="grid2">
+          <div class="field">
+            <label for="email">Email address <span class="req" aria-hidden="true">*</span></label>
+            <input class="input" type="email" id="email" name="email" required
+                   autocomplete="email" inputmode="email" maxlength="180">
+            <p class="err" data-err="email" hidden>That email address does not look right.</p>
+          </div>
+          <div class="field">
+            <label for="company">Business name</label>
+            <input class="input" type="text" id="company" name="company"
+                   autocomplete="organization" maxlength="140">
+          </div>
         </div>
         <div class="field">
-          <label for="town">Town you are based in</label>
-          <input class="input" type="text" id="town" name="town" autocomplete="address-level2" maxlength="80">
+          <label for="town">Postcode</label>
+          <input class="input" type="text" id="town" name="town" autocomplete="postal-code" maxlength="80"
+                 placeholder="WA1">
           <p class="hint">Helps us work out delivery or collection.</p>
+        </div>
+        <div class="field">
+          <label for="job_type">What is your enquiry about? <span class="req" aria-hidden="true">*</span></label>
+          <select class="select" id="job_type" name="job_type" required>
+            <?php foreach ($ENQ_TYPES as $t): ?>
+              <option value="<?= e($t) ?>"><?= e($t) ?></option>
+            <?php endforeach; ?>
+          </select>
         </div>
       </fieldset>
 
       <!-- ── step 2 ────────────────────────────────────────────────── -->
       <fieldset class="step" data-step="2">
         <legend class="sr">The trailer</legend>
-        <div class="field">
-          <label>Is this a new build or a repair? <span class="req" aria-hidden="true">*</span></label>
-          <div class="opts">
-            <label class="opt"><input type="radio" name="job_type" value="New build" required checked><span>New build</span></label>
-            <label class="opt"><input type="radio" name="job_type" value="Repair"><span>Repair</span></label>
-            <label class="opt"><input type="radio" name="job_type" value="Refurbishment"><span>Refurbishment</span></label>
-            <label class="opt"><input type="radio" name="job_type" value="Not sure yet"><span>Not sure yet</span></label>
-          </div>
-        </div>
         <div class="grid2">
           <div class="field">
             <label for="size">Trailer size</label>
@@ -127,11 +149,22 @@ require __DIR__ . '/inc/header.php';
           </div>
         </div>
         <div class="field">
-          <label for="intended_use">What will you be serving?</label>
-          <input class="input" type="text" id="intended_use" name="intended_use" maxlength="200"
-                 value="<?= e(implode(', ', array_map('strval', $preUse))) ?>"
-                 placeholder="Burgers, coffee, pizza, desserts...">
+          <label>What will the trailer be used for?</label>
+          <div class="opts">
+            <?php foreach ($USES as $u): ?>
+              <label class="opt">
+                <input type="checkbox" name="uses[]" value="<?= e($u) ?>"
+                       <?= in_array($u, $preUse, true) ? ' checked' : '' ?>>
+                <span><?= e($u) ?></span>
+              </label>
+            <?php endforeach; ?>
+          </div>
           <p class="hint">This drives the whole layout, so it is the most useful thing you can tell us.</p>
+        </div>
+        <div class="field">
+          <label for="staff">How many staff will normally work inside?</label>
+          <input class="input" type="text" id="staff" name="staff" maxlength="40"
+                 inputmode="numeric" placeholder="Two, sometimes three at events">
         </div>
         <div class="field">
           <label for="tow_vehicle">What will be towing it?</label>
@@ -154,18 +187,43 @@ require __DIR__ . '/inc/header.php';
           <p class="hint">Tick anything you know you want. We will advise on the rest.</p>
         </div>
         <div class="field">
-          <label>Power</label>
-          <div class="opts">
-            <label class="opt"><input type="radio" name="power" value="Gas and electric" checked><span>Gas and electric</span></label>
-            <label class="opt"><input type="radio" name="power" value="All electric"><span>All electric</span></label>
-            <label class="opt"><input type="radio" name="power" value="Gas only"><span>Gas only</span></label>
-            <label class="opt"><input type="radio" name="power" value="Need advice"><span>Need advice</span></label>
+          <label for="equipment">Equipment required</label>
+          <textarea class="textarea" id="equipment" name="equipment" rows="3" maxlength="1200"
+                    placeholder="Anything not covered above, including equipment you already own."></textarea>
+          <p class="hint">If you already own appliances, send the make, model and dimensions.</p>
+        </div>
+
+        <?php
+        $ynu = ['Yes', 'No', 'Not sure'];
+        $services = [
+          'gas'      => 'Gas required?',
+          'electric' => 'Electric required?',
+          'water'    => 'Water system required?',
+        ];
+        ?>
+        <?php foreach ($services as $key => $label): ?>
+          <div class="field">
+            <label><?= e($label) ?></label>
+            <div class="opts">
+              <?php foreach ($ynu as $i => $v): ?>
+                <label class="opt">
+                  <input type="radio" name="<?= e($key) ?>" value="<?= e($v) ?>"<?= $i === 2 ? ' checked' : '' ?>>
+                  <span><?= e($v) ?></span>
+                </label>
+              <?php endforeach; ?>
+            </div>
           </div>
+        <?php endforeach; ?>
+
+        <div class="field">
+          <label for="hatch">Serving hatch requirements</label>
+          <input class="input" type="text" id="hatch" name="hatch" maxlength="200"
+                 placeholder="One large hatch on the nearside, counter underneath...">
         </div>
         <div class="field">
-          <label for="power_notes">Anything specific about gas or electrics?</label>
-          <input class="input" type="text" id="power_notes" name="power_notes" maxlength="200"
-                 placeholder="Generator size, hook-up, LPG bottles...">
+          <label for="doors">Entrance door requirements</label>
+          <input class="input" type="text" id="doors" name="doors" maxlength="200"
+                 placeholder="Rear door, or side door away from the serving side...">
         </div>
       </fieldset>
 

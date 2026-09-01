@@ -10,16 +10,23 @@ require_once __DIR__ . '/inc/bootstrap.php';
  * Nothing else needs changing.
  */
 $BUILDS = [
-  ['catering-trailer-interior-swirl-stainless', 'Brand new interior with swirl finish stainless steel walls, extraction canopy and counter run', 'Swirl stainless', 'Interior fit-out'],
-  ['catering-trailer-new-build-workshop', 'A finished catering trailer in the workshop with its serving hatch raised', 'New build', 'In the workshop'],
-  ['catering-trailer-serving-hatch-open', 'Serving hatch raised on its gas struts, counter and interior visible', '3.0m body', 'Single axle'],
-  ['catering-trailer-serving-side',       'Serving side of a white catering trailer with the hatch closed',        '3.0m body', 'Serving side'],
-  ['catering-trailer-front-three-quarter','Front three quarter view showing the A frame, jockey wheel and gas locker', '3.0m body', 'A frame and gas locker'],
-  ['catering-trailer-side-elevation',     'Full side elevation of a white single axle catering trailer',           '3.0m body', 'Nearside elevation'],
-  ['catering-trailer-rear-three-quarter', 'Rear three quarter view showing the closed serving window',             '3.0m body', 'Rear three quarter'],
-  ['catering-trailer-rear-door',          'Rear of the trailer showing the personnel door and road lights',        '3.0m body', 'Rear door'],
-  ['catering-trailer-hitched-rear',       'Catering trailer hitched to a tow vehicle, ready to move',              '3.0m body', 'Hitched and ready'],
+  ['catering-trailer-interior-swirl-stainless', 'Catering trailer interior with swirl finish stainless steel walls, extraction canopy and counter run', 'Swirl stainless', 'Interior fit-out', 'Interior Fit-Outs'],
+  ['catering-trailer-new-build-workshop', 'A finished catering trailer in the workshop with its serving hatch raised', 'New build', 'In the workshop', 'New Builds'],
+  ['catering-trailer-serving-hatch-open', 'Serving hatch raised on its gas struts, counter and interior visible', '3.0m body', 'Single axle', 'Serving Hatches'],
+  ['catering-trailer-serving-side',       'Serving side of a white catering trailer with the hatch closed',        '3.0m body', 'Serving side', 'Serving Hatches'],
+  ['catering-trailer-front-three-quarter','Front three quarter view showing the A frame, jockey wheel and gas locker', '3.0m body', 'A frame and gas locker', 'New Builds'],
+  ['catering-trailer-side-elevation',     'Full side elevation of a white single axle catering trailer',           '3.0m body', 'Nearside elevation', 'New Builds'],
+  ['catering-trailer-rear-three-quarter', 'Rear three quarter view showing the closed serving window',             '3.0m body', 'Rear three quarter', 'New Builds'],
+  ['catering-trailer-rear-door',          'Rear of the trailer showing the personnel door and road lights',        '3.0m body', 'Rear door', 'New Builds'],
+  ['catering-trailer-hitched-rear',       'Catering trailer hitched to a tow vehicle, ready to move',              '3.0m body', 'Hitched and ready', 'New Builds'],
 ];
+
+/* Only categories we actually have photographs for. The rest of the taxonomy
+   waits until there is genuine work to show under it. */
+$FILTERS = array_values(array_intersect(
+    ['New Builds', 'Repairs', 'Refurbishments', 'Interior Fit-Outs', 'Serving Hatches', 'Custom Work'],
+    array_unique(array_column($BUILDS, 4))
+));
 
 $PAGE = [
   'title'       => 'Our Builds | Catering Trailer Gallery | Catering Trailers NW',
@@ -42,21 +49,31 @@ require __DIR__ . '/inc/header.php';
 
 <section class="band band--tight">
   <div class="wrap">
-    <div class="rise" style="max-width:62ch">
+    <div class="rise" style="max-width:64ch">
       <p class="kicker">Our builds</p>
-      <h1>Trailers that left our workshop</h1>
-      <p class="lede">Real photographs of our own units, not stock images. Every trailer
-         goes out in white as standard and is finished to whatever colour, livery or wrap
-         you want.</p>
+      <h1><?= e(page_h1('/gallery', 'Catering Trailer Builds & Projects')) ?></h1>
+      <p class="lede">Take a look at catering trailers, repairs, refurbishments and custom
+         trailer work.</p>
+      <p class="lede">These are photographs of our own units, not stock images. This gallery
+         will continue to grow as new projects are completed.</p>
     </div>
   </div>
 </section>
 
 <section class="band" style="padding-top:0">
   <div class="wrap">
-    <div class="gal rise stagger">
-      <?php foreach ($BUILDS as $i => [$slug, $alt, $spec, $label]): ?>
-        <figure>
+    <?php if (count($FILTERS) > 1): ?>
+      <div class="chips rise" id="galFilters" style="margin-bottom:1.8rem">
+        <button class="chip" type="button" data-cat="all" aria-pressed="true">All</button>
+        <?php foreach ($FILTERS as $f): ?>
+          <button class="chip" type="button" data-cat="<?= e($f) ?>" aria-pressed="false"><?= e($f) ?></button>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+
+    <div class="gal rise stagger" id="galGrid">
+      <?php foreach ($BUILDS as $i => [$slug, $alt, $spec, $label, $cat]): ?>
+        <figure data-cat="<?= e($cat) ?>">
           <?= picture($slug, $alt, [
                 'sizes'  => '(max-width:700px) 100vw, (max-width:1100px) 50vw, 33vw',
                 'widths' => [480, 800, 1200],
@@ -67,6 +84,9 @@ require __DIR__ . '/inc/header.php';
       <?php endforeach; ?>
     </div>
 
+    <p class="hint rise" id="galEmpty" hidden style="margin-top:1.4rem">
+      Nothing photographed under that heading yet.</p>
+
     <div class="placeholder rise" style="margin-top:2.4rem">
       <b>More builds going up here</b>
       <p>We photograph every trailer before it leaves. As the newer builds are shot they
@@ -75,16 +95,50 @@ require __DIR__ . '/inc/header.php';
   </div>
 </section>
 
-<section class="band band--well">
-  <div class="wrap wrap--narrow rise" style="text-align:center">
-    <h2>Want one like these, built for your menu?</h2>
-    <p class="lede" style="margin-inline:auto">Tell us what you serve and we will draw
-       something around it.</p>
-    <div class="btn-row" style="justify-content:center;margin-top:1.6rem">
+<section class="band band--well" aria-labelledby="sim-h">
+  <div class="wrap wrap--narrow rise">
+    <p class="kicker">Seen something you like?</p>
+    <h2 id="sim-h">Planning Something Similar?</h2>
+    <p class="lede">If you see a trailer layout, serving hatch or feature you like, mention it
+       when requesting your quote.</p>
+    <p class="lede">We can discuss how similar ideas may work with your own menu and trailer
+       requirements. See how we approach a
+       <a href="/new-catering-trailers" style="color:var(--accent-hover)">new build</a>.</p>
+    <div class="btn-row" style="margin-top:1.6rem">
       <a class="btn btn--accent btn--lg" href="/request-a-quote">Request a Quote</a>
-      <a class="btn btn--ghost btn--lg" href="/new-catering-trailers">How we build them</a>
+      <a class="btn btn--ghost btn--lg" href="/new-catering-trailers">View New Catering Trailers</a>
     </div>
   </div>
 </section>
 
-<?php require __DIR__ . '/inc/footer.php'; ?>
+<script>
+/* Gallery filtering. Additive: with scripting off every photograph is visible. */
+(function () {
+  var bar = document.getElementById('galFilters');
+  if (!bar) return;
+  var figs  = Array.prototype.slice.call(document.querySelectorAll('#galGrid figure'));
+  var empty = document.getElementById('galEmpty');
+
+  bar.addEventListener('click', function (e) {
+    var btn = e.target.closest('.chip');
+    if (!btn) return;
+    var want = btn.getAttribute('data-cat');
+
+    bar.querySelectorAll('.chip').forEach(function (c) {
+      c.setAttribute('aria-pressed', String(c === btn));
+    });
+
+    var shown = 0;
+    figs.forEach(function (f) {
+      var on = want === 'all' || f.getAttribute('data-cat') === want;
+      f.hidden = !on;
+      if (on) shown++;
+    });
+    empty.hidden = shown > 0;
+  });
+})();
+</script>
+
+<?php
+$PAGE['hide_cta'] = true;
+require __DIR__ . '/inc/footer.php';

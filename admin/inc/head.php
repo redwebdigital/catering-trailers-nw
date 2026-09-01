@@ -15,7 +15,7 @@ require_admin();
    nothing once they have run, so the owner never has to touch an installer
    again to pick up a new feature. Admin pages only: no public request pays
    for this. */
-try { migrate(); seed_hire(); } catch (Throwable $e) {
+try { migrate(); seed_hire(); seed_pages_seo(); } catch (Throwable $e) {
     error_log('CTNW admin migrate failed: ' . $e->getMessage());
 }
 

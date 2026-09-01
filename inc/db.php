@@ -312,6 +312,17 @@ function seed_hire(): void
             }
         }
 
+        // enquiry types, shared by the quote form and the contact form
+        $haveEnq = (int)q_val("SELECT COUNT(*) FROM builder_options WHERE group_key = 'enquiry_type'");
+        if ($haveEnq === 0) {
+            $types = ['New Catering Trailer', 'Repair', 'Refurbishment', 'Trailer Hire',
+                      'Mobile Bar', 'Other'];
+            foreach ($types as $i => $label) {
+                q("INSERT INTO builder_options (group_key, label, value, enabled, sort_order)
+                   VALUES ('enquiry_type', ?, ?, 1, ?)", [$label, $label, $i + 1]);
+            }
+        }
+
         $slug = '/catering-trailer-hire';
         $haveFaq = (int)q_val("SELECT COUNT(*) FROM page_faqs WHERE page_slug = ?", [$slug]);
         if ($haveFaq === 0) {
@@ -341,6 +352,85 @@ function seed_hire(): void
         }
     } catch (Throwable $e) {
         error_log('CTNW hire seed failed: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Fill in the SEO fields for every page.
+ *
+ * Only ever writes to a column that is still empty, so the moment the owner
+ * types their own title or description, this stops touching that field. New
+ * pages added to the seed data reach an existing site on the next admin visit.
+ */
+function seed_pages_seo(): void
+{
+    $data = require __DIR__ . '/seed-data.php';
+    $base = rtrim((string)(setting('biz.base_url') ?: 'https://cateringtrailersnw.co.uk'), '/');
+
+    try {
+        /* Every page now carries a written title that handles its own branding,
+           so the global suffix would append the business name a second time and
+           push titles past what Google will show. Cleared once, and only while
+           it still holds the value it shipped with, so a suffix the owner has
+           deliberately chosen is left alone. */
+        if (trim((string)setting('seo.title_suffix', '')) === '| Catering Trailers NW'
+            || (string)setting('seo.title_suffix', '') === ' | Catering Trailers NW') {
+            setting_set('seo.title_suffix', '', 'seo');
+            settings_all(true);
+        }
+
+        foreach ($data as $slug => $v) {
+            $row = q_one("SELECT * FROM pages WHERE slug = ?", [$slug]);
+
+            if (!$row) {
+                $next = (int)q_val("SELECT COALESCE(MAX(sort_order), 0) + 1 FROM pages");
+                q("INSERT INTO pages (slug, label, file, sort_order, updated_at) VALUES (?,?,?,?,?)",
+                  [$slug, $v['label'] ?? $slug, $v['file'] ?? '', $next, date('c')]);
+                $row = q_one("SELECT * FROM pages WHERE slug = ?", [$slug]);
+                if (!$row) continue;
+            }
+
+            $set = [];
+            $vals = [];
+            $wanted = [
+                'seo_title'  => $v['seo_title']  ?? '',
+                'meta_desc'  => $v['meta_desc']  ?? '',
+                'h1'         => $v['h1']         ?? '',
+                'focus_kw'   => $v['focus_kw']   ?? '',
+                'hero_intro' => $v['hero_intro'] ?? '',
+                'canonical'  => $base . ($slug === '/' ? '/' : $slug),
+                'og_title'   => $v['seo_title']  ?? '',
+                'og_desc'    => $v['meta_desc']  ?? '',
+                'og_image'   => '/assets/img/og-default.jpg',
+            ];
+            foreach ($wanted as $col => $val) {
+                if ($val === '') continue;
+                if (trim((string)($row[$col] ?? '')) !== '') continue;   // already set: leave it
+                $set[] = "$col = ?";
+                $vals[] = $val;
+            }
+
+            // robots and schema type carry a default, so only correct them where
+            // this page is meant to differ from it
+            if (($v['robots_index'] ?? 'index') !== ($row['robots_index'] ?? 'index')) {
+                $set[] = 'robots_index = ?'; $vals[] = $v['robots_index'] ?? 'index';
+            }
+            if (!empty($v['schema_type']) && ($row['schema_type'] ?? 'WebPage') === 'WebPage'
+                && $v['schema_type'] !== 'WebPage') {
+                $set[] = 'schema_type = ?'; $vals[] = $v['schema_type'];
+            }
+            if (trim((string)($row['label'] ?? '')) === '' && !empty($v['label'])) {
+                $set[] = 'label = ?'; $vals[] = $v['label'];
+            }
+
+            if ($set) {
+                $set[] = 'updated_at = ?'; $vals[] = date('c');
+                $vals[] = $slug;
+                q("UPDATE pages SET " . implode(', ', $set) . " WHERE slug = ?", $vals);
+            }
+        }
+    } catch (Throwable $e) {
+        error_log('CTNW SEO seed failed: ' . $e->getMessage());
     }
 }
 

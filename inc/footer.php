@@ -44,7 +44,7 @@ $noPhone  = !empty($PAGE['no_phone']);
       </div>
 
       <div>
-        <h4>What we do</h4>
+        <h3 class="foot__h">What we do</h3>
         <ul>
           <li><a href="/new-catering-trailers">New Catering Trailers</a></li>
           <li><a href="/catering-trailer-repairs">Trailer Repairs</a></li>
@@ -54,7 +54,7 @@ $noPhone  = !empty($PAGE['no_phone']);
       </div>
 
       <div>
-        <h4>Company</h4>
+        <h3 class="foot__h">Company</h3>
         <ul>
           <li><a href="/about">About Us</a></li>
           <li><a href="/faqs">FAQs</a></li>
@@ -65,7 +65,7 @@ $noPhone  = !empty($PAGE['no_phone']);
       </div>
 
       <div>
-        <h4>Get in touch</h4>
+        <h3 class="foot__h">Get in touch</h3>
         <ul>
           <li><a href="<?= e(tel_href()) ?>" data-track="call-footer"><?= e($CFG['phone_display']) ?></a></li>
           <li><a href="mailto:<?= e($CFG['email']) ?>"><?= e($CFG['email']) ?></a></li>
@@ -85,14 +85,14 @@ $noPhone  = !empty($PAGE['no_phone']);
             'LinkedIn'  => $CFG['social']['linkedin']  ?? '',
         ]);
         if ($nets): ?>
-          <h4 style="margin-top:1.6rem">Follow us</h4>
+          <h3 class="foot__h" style="margin-top:1.6rem">Follow us</h3>
           <ul style="display:flex;flex-wrap:wrap;gap:.5rem 1.1rem">
             <?php foreach ($nets as $label => $href): ?>
               <li><a href="<?= e($href) ?>" target="_blank" rel="noopener me"><?= e($label) ?></a></li>
             <?php endforeach; ?>
           </ul>
         <?php endif; ?>
-        <h4 style="margin-top:1.6rem">Workshop</h4>
+        <h3 class="foot__h" style="margin-top:1.6rem">Workshop</h3>
         <address style="font-style:normal;font-size:.95rem;color:var(--text-secondary)">
           <?= e($a['street']) ?><br>
           <?= e($a['locality']) ?><br>
@@ -103,7 +103,7 @@ $noPhone  = !empty($PAGE['no_phone']);
     </div>
 
     <div style="margin-top:2.4rem">
-      <h4>Areas we cover</h4>
+      <h3 class="foot__h">Areas we cover</h3>
       <ul style="display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;list-style:none;margin:0;padding:0">
         <?php foreach ($CFG['areas'] as $slug => $area): ?>
           <li><a href="/areas/catering-trailers-<?= e($slug) ?>">Catering Trailers <?= e($area['name']) ?></a></li>

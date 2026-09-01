@@ -101,6 +101,29 @@ function page_seo(string $path): array
     return $cache[$path] = $row ?: [];
 }
 
+/**
+ * A field from the page's admin record, falling back to what the page itself
+ * says. Lets every page take its heading and hero wording from Pages & SEO
+ * without any page having to know whether the database is there.
+ */
+function page_field(string $path, string $col, string $default): string
+{
+    $v = trim((string)(page_seo($path)[$col] ?? ''));
+    return $v !== '' ? $v : $default;
+}
+
+/** The page's H1, overridable under Pages & SEO. */
+function page_h1(string $path, string $default): string
+{
+    return page_field($path, 'h1', $default);
+}
+
+/** The opening line under the H1, overridable under Pages & SEO. */
+function page_hero(string $path, string $default): string
+{
+    return page_field($path, 'hero_intro', $default);
+}
+
 /** The configurator's options, grouped. Empty array when not installed. */
 function builder_options(string $group): array
 {
