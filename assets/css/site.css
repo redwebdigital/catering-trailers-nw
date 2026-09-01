@@ -736,3 +736,38 @@ section{position:relative}
 }
 .callout p{margin:0;color:var(--text-secondary)}
 .callout strong{color:var(--text-primary)}
+
+/* ---------- breadcrumbs ------------------------------------------------- */
+.crumbs{border-bottom:1px solid var(--hairline);background:var(--canvas-deep)}
+.crumbs ol{
+  display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;
+  list-style:none;margin:0;padding:.7rem 0;
+  font:500 .82rem/1.4 var(--body);color:var(--text-secondary);
+}
+.crumbs li{display:flex;align-items:center;gap:.5rem}
+.crumbs li+li::before{content:"/";color:var(--steel);opacity:.6}
+.crumbs a{color:var(--text-secondary);text-decoration:none}
+.crumbs a:hover{color:var(--accent-hover)}
+.crumbs [aria-current="page"]{color:var(--text-primary)}
+
+/* ---------- static pill lists ------------------------------------------- */
+.taglist{
+  display:flex;flex-wrap:wrap;gap:.5rem;
+  list-style:none;margin:0;padding:0;
+}
+.taglist li{
+  padding:.42rem .8rem;border:1px solid var(--hairline);border-radius:2px;
+  background:var(--panel);color:var(--text-secondary);
+  font:500 .87rem/1.35 var(--body);
+}
+.taglist li::marker{content:none}
+
+.clean-list{
+  margin:0;padding-left:1.1rem;color:var(--text-secondary);
+  font:400 .95rem/1.7 var(--body);
+}
+.clean-list li{margin-bottom:.3rem}
+.clean-list li::marker{color:var(--accent)}
+.clean-list--cols{columns:2;column-gap:2.4rem}
+.clean-list--cols li{break-inside:avoid}
+@media (max-width:640px){.clean-list--cols{columns:1}}

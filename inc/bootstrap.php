@@ -127,6 +127,55 @@ function builder_stages(): array
     } catch (Throwable $e) { return []; }
 }
 
+/**
+ * A page's FAQs, question => answer.
+ *
+ * Falls back to $default so the visible list and the FAQ schema are generated
+ * from one source and can never drift apart, whatever the database is doing.
+ *
+ * @param array<int, array{0:string,1:string}> $default
+ * @return array<string, string>
+ */
+function page_faqs(string $slug, array $default = []): array
+{
+    $rows = [];
+    if (db_ready()) {
+        try {
+            $rows = q_all("SELECT q, a FROM page_faqs WHERE page_slug = ? AND enabled = 1
+                           ORDER BY sort_order, id", ['/' . trim($slug, '/')]);
+        } catch (Throwable $e) { $rows = []; }
+    }
+    $out = [];
+    foreach ($rows as $r) {
+        $q = trim((string)$r['q']);
+        if ($q !== '') $out[$q] = (string)$r['a'];
+    }
+    if ($out) return $out;
+
+    foreach ($default as [$q, $a]) { $out[$q] = $a; }
+    return $out;
+}
+
+/** A hire type list the owner can extend from the admin area. */
+function hire_types(): array
+{
+    $rows = builder_options('hire_type');
+    if ($rows) return array_values(array_filter(array_map(
+        fn($r) => trim((string)($r['label'] ?? '')), $rows
+    )));
+    return ['Catering trailer', 'Food trailer', 'Mobile bar', 'Other'];
+}
+
+/** Service areas for the hire page, one per line in the admin area. */
+function hire_areas(): array
+{
+    $raw = db_ready() ? (string)setting('hire.areas', '') : '';
+    $list = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n|,/', $raw) ?: [])));
+    if ($list) return $list;
+    return ['Warrington', 'Manchester', 'Liverpool', 'Cheshire', 'Widnes', 'Runcorn',
+            'St Helens', 'Wigan', 'Bolton', 'Northwich', 'Knutsford', 'Altrincham'];
+}
+
 /** Escape for HTML text and attribute contexts. */
 function e(?string $s): string
 {

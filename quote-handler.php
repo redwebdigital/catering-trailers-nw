@@ -21,16 +21,20 @@ require_once __DIR__ . '/inc/bootstrap.php';   // $CFG, overlaid with admin sett
 
 $isAjax = (($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'fetch');
 
+/* Where a non-JavaScript visitor is sent back to when something is wrong.
+   Set once the form is identified, so they land on the page they came from. */
+$RETURN_PATH = '/request-a-quote';
+
 /** Reply and stop. */
 function respond(bool $ok, string $error = '', int $code = 200): never
 {
-    global $isAjax;
+    global $isAjax, $RETURN_PATH;
     if ($isAjax) {
         http_response_code($ok ? 200 : $code);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($ok ? ['ok' => true] : ['ok' => false, 'error' => $error]);
     } else {
-        header('Location: ' . ($ok ? '/thank-you' : '/request-a-quote?error=1'), true, 303);
+        header('Location: ' . ($ok ? '/thank-you' : $RETURN_PATH . '?error=1'), true, 303);
     }
     exit;
 }
@@ -95,9 +99,44 @@ $power   = field('power', 40);
 $pNotes  = field('power_notes', 200);
 $budget  = field('budget', 40);
 $reqDate = field('required_date', 20);
-$source  = field('source', 60);
+$source  = field('source', 60);          // "how did you hear about us", quote form only
 $message = field('message', 4000);
 $consent = ($_POST['consent'] ?? '') === 'yes';
+
+/* Which form this came from. Kept separate from $source above, which is the
+   customer's answer to how they found us and means something quite different. */
+$enqSource = field('enquiry_source', 40);
+if (!in_array($enqSource, ['quote', 'hire', 'general', 'new-trailer', 'repair'], true)) {
+    $enqSource = 'quote';
+}
+$isHire = $enqSource === 'hire';
+if ($isHire) { $RETURN_PATH = '/catering-trailer-hire'; }
+
+/* Hire enquiries ask a different set of questions. They are gathered into the
+   enquiry's "extra" field as readable lines, so the admin area shows them
+   without needing a column per question. */
+$hireExtra = [];
+if ($isHire) {
+    $untilDate = field('until_date', 20);
+    if ($untilDate !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $untilDate)) $untilDate = '';
+
+    $map = [
+        'Company'            => field('company', 140),
+        'Event/business type'=> field('event_type', 140),
+        'Required until'     => $untilDate,
+        'Expected customers' => field('customers', 60),
+        'Equipment required' => field('equipment', 1200),
+        'Gas required'       => field('gas', 20),
+        'Electrical supply'  => field('electric', 20),
+        'Water required'     => field('water', 20),
+        'Delivery required'  => field('delivery', 20),
+        'Interested in buying a new trailer' => field('buy_interest', 60),
+        'Additional information' => field('extra_notes', 2000),
+    ];
+    foreach ($map as $label => $value) {
+        if ($value !== '') $hireExtra[] = $label . ': ' . $value;
+    }
+}
 
 $appliances = [];
 if (isset($_POST['appliances']) && is_array($_POST['appliances'])) {
@@ -110,7 +149,11 @@ if (isset($_POST['appliances']) && is_array($_POST['appliances'])) {
 // ── validation ───────────────────────────────────────────────────────────
 $errors = [];
 if (mb_strlen($name) < 2)                              $errors[] = 'name';
-if (preg_match_all('/\d/', $phone) < 9)                $errors[] = 'phone';
+// The hire page asks for a written quotation by email, so a phone number is
+// optional there. When one is given it still has to look like a real number.
+if ($isHire) {
+    if ($phone !== '' && preg_match_all('/\d/', $phone) < 9) $errors[] = 'phone';
+} elseif (preg_match_all('/\d/', $phone) < 9)          $errors[] = 'phone';
 if (!filter_var($email, FILTER_VALIDATE_EMAIL))        $errors[] = 'email';
 if (mb_strlen($message) < 5)                           $errors[] = 'message';
 if (!$consent)                                         $errors[] = 'consent';
@@ -181,6 +224,36 @@ if (!empty($_FILES['photos']['name'][0])) {
 }
 
 // ── compose ──────────────────────────────────────────────────────────────
+if ($isHire) {
+    $lines = [
+        'NEW HIRE ENQUIRY',
+        str_repeat('=', 52),
+        '',
+        'Name:            ' . $name,
+        'Company:         ' . (field('company', 140) ?: '-'),
+        'Phone:           ' . ($phone ?: 'not given'),
+        'Email:           ' . $email,
+        'Location:        ' . ($town ?: '-'),
+        '',
+        'Wants:           ' . ($jobType ?: '-'),
+        'Required from:   ' . ($reqDate ?: 'not given'),
+        '',
+    ];
+    foreach ($hireExtra as $l) { $lines[] = $l; }
+    $lines[] = '';
+    $lines[] = 'MENU / INTENDED USE';
+    $lines[] = str_repeat('-', 52);
+    $lines[] = $message;
+    $lines[] = '';
+    $lines[] = str_repeat('-', 52);
+    $lines[] = 'Files attached:  ' . count($saved);
+    if ($uploadNote !== '') $lines[] = 'Note: ' . $uploadNote;
+    $lines[] = 'Submitted:       ' . date('D j M Y, H:i');
+    $lines[] = 'Source IP:       ' . $ip;
+    $lines[] = '';
+    $lines[] = 'Nothing has been promised to this customer about availability.';
+    $body = implode("\r\n", $lines);
+} else {
 $lines = [
     'NEW QUOTE ENQUIRY',
     str_repeat('=', 52),
@@ -216,10 +289,20 @@ $lines[] = 'Submitted:       ' . date('D j M Y, H:i');
 $lines[] = 'Source IP:       ' . $ip;
 
 $body = implode("\r\n", $lines);
+}
 
 // ── send ─────────────────────────────────────────────────────────────────
-$to        = $CFG['enquiry_inbox'];
-$subjectRaw = 'Quote enquiry: ' . ($jobType ?: 'trailer') . ' - ' . $name;
+// Hire enquiries can be routed to their own inbox from the admin area; when
+// that is left blank they go to the usual one.
+$to = $CFG['enquiry_inbox'];
+if ($isHire && db_ready()) {
+    $hireTo = trim((string)setting('hire.email', ''));
+    if ($hireTo !== '' && filter_var($hireTo, FILTER_VALIDATE_EMAIL)) $to = $hireTo;
+}
+
+$subjectRaw = $isHire
+    ? 'Hire enquiry: ' . ($jobType ?: 'trailer') . ' - ' . $name
+    : 'Quote enquiry: ' . ($jobType ?: 'trailer') . ' - ' . $name;
 $subject   = '=?UTF-8?B?' . base64_encode(headerSafe($subjectRaw)) . '?=';
 
 // The envelope sender must be a real mailbox on this domain or the host will
@@ -265,16 +348,18 @@ $parts[] = "--{$boundary}--";
 $enquiryId = null;
 try {
     if (db_ready()) {
-        $source = (string)($_POST['source'] ?? 'quote');
-        if (!in_array($source, ['quote','general','new-trailer','repair'], true)) { $source = 'quote'; }
+        $storedSource = $isHire ? 'Trailer Hire' : $enqSource;
+        $storedExtra  = $isHire
+            ? implode("\n", $hireExtra)
+            : trim($pNotes . ($tow !== '' ? ' | tows with: ' . $tow : ''));
 
         q("INSERT INTO enquiries
            (created_at, source, name, phone, email, town, job_type, body_length, axle,
             fit_out, appliances, power, budget, required_date, message, extra, files, status, ip, mailed)
            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'New',?,0)", [
-            date('c'), $source, $name, $phone, $email, $town, $jobType, $size, $axle,
+            date('c'), $storedSource, $name, $phone, $email, $town, $jobType, $size, $axle,
             $use, implode(', ', $appliances), $power, $budget, $reqDate, $message,
-            trim($pNotes . ($tow !== '' ? ' | tows with: ' . $tow : '')),
+            $storedExtra,
             implode('|', array_column($saved, 'name')), $ip,
         ]);
         $enquiryId = (int)db()->lastInsertId();
@@ -288,6 +373,55 @@ $sent = @mail($to, $subject, implode('', $parts), implode("\r\n", $headers), '-f
 
 if ($enquiryId && $sent) {
     try { q("UPDATE enquiries SET mailed = 1 WHERE id = ?", [$enquiryId]); } catch (Throwable $e) {}
+}
+
+/**
+ * Acknowledge a hire enquiry to the customer.
+ *
+ * Deliberately confirms receipt and nothing else: no trailer is reserved and
+ * no date is promised until somebody has actually checked. Sent best-effort,
+ * and its failure never affects the reply the customer sees, because their
+ * enquiry has already been recorded either way.
+ */
+if ($isHire) {
+    $ackLines = [
+        'Hello ' . $name . ',',
+        '',
+        'Thank you for your hire enquiry. This email confirms we have received it.',
+        '',
+        'We will review your requirements and come back to you by email with a tailored',
+        'quotation. Please note that sending an enquiry does not reserve a trailer or',
+        'confirm availability for your dates.',
+        '',
+        'WHAT YOU SENT US',
+        str_repeat('-', 52),
+        'Looking for:     ' . ($jobType ?: '-'),
+        'Required from:   ' . ($reqDate ?: 'not given'),
+        'Location:        ' . ($town ?: 'not given'),
+        '',
+        $message,
+        '',
+        str_repeat('-', 52),
+        'If anything above is wrong, reply to this email and tell us.',
+        '',
+        $CFG['name'],
+        $CFG['base_url'],
+    ];
+    $ackHeaders = [
+        'MIME-Version: 1.0',
+        'Content-Type: text/plain; charset=UTF-8',
+        'From: ' . headerSafe($CFG['name']) . ' <' . $fromMailbox . '>',
+        'Reply-To: ' . $to,
+        'Auto-Submitted: auto-replied',
+        'X-Mailer: catering-trailers-nw',
+    ];
+    @mail(
+        headerSafe($email),
+        '=?UTF-8?B?' . base64_encode('We have your hire enquiry - ' . $CFG['name']) . '?=',
+        implode("\r\n", $ackLines),
+        implode("\r\n", $ackHeaders),
+        '-f' . $fromMailbox
+    );
 }
 
 // ── always keep our own copy, so nothing is lost if mail fails ───────────

@@ -253,6 +253,21 @@ CREATE INDEX IF NOT EXISTS idx_enq_created ON enquiries (created_at)",
 '010_enquiry_status_index' => "
 CREATE INDEX IF NOT EXISTS idx_enq_status ON enquiries (status)",
 
+/* FAQs shown on a page, editable in the admin area. Keyed by page slug so any
+   page can own a set, not just the hire page. */
+'011_page_faqs' => "
+CREATE TABLE IF NOT EXISTS page_faqs (
+  id          $auto,
+  page_slug   VARCHAR(190),
+  q           TEXT,
+  a           TEXT,
+  enabled     INTEGER DEFAULT 1,
+  sort_order  INTEGER DEFAULT 0
+)",
+
+'012_page_faq_index' => "
+CREATE INDEX IF NOT EXISTS idx_faq_page ON page_faqs (page_slug, sort_order)",
+
     ];
 }
 
@@ -272,6 +287,93 @@ function migrate(): array
         $applied[] = $name;
     }
     return $applied;
+}
+
+/* ------------------------------------------------------------- hire seeds */
+
+/**
+ * Put the hire page's editable content into the database if it is not there.
+ *
+ * Migrations create tables but cannot portably carry many rows, so the starting
+ * content is seeded here instead. Safe to call repeatedly: it only ever fills
+ * gaps, so anything the owner has edited or deleted is left exactly as it is.
+ */
+function seed_hire(): void
+{
+    try {
+        // hire types, reusing the builder options table so the existing admin
+        // add/remove/reorder machinery works on them with no new code
+        $have = (int)q_val("SELECT COUNT(*) FROM builder_options WHERE group_key = 'hire_type'");
+        if ($have === 0) {
+            $types = ['Catering trailer', 'Food trailer', 'Mobile bar', 'Other'];
+            foreach ($types as $i => $label) {
+                q("INSERT INTO builder_options (group_key, label, value, enabled, sort_order)
+                   VALUES ('hire_type', ?, ?, 1, ?)", [$label, $label, $i + 1]);
+            }
+        }
+
+        $slug = '/catering-trailer-hire';
+        $haveFaq = (int)q_val("SELECT COUNT(*) FROM page_faqs WHERE page_slug = ?", [$slug]);
+        if ($haveFaq === 0) {
+            foreach (hire_faq_defaults() as $i => [$q, $a]) {
+                q("INSERT INTO page_faqs (page_slug, q, a, enabled, sort_order)
+                   VALUES (?,?,?,1,?)", [$slug, $q, $a, $i + 1]);
+            }
+        }
+
+        if (setting('hire.areas') === null) {
+            setting_set('hire.areas', implode("\n", [
+                'Warrington', 'Manchester', 'Liverpool', 'Cheshire', 'Widnes', 'Runcorn',
+                'St Helens', 'Wigan', 'Bolton', 'Northwich', 'Knutsford', 'Altrincham',
+            ]), 'hire');
+        }
+        if (setting('hire.enabled') === null) { setting_set('hire.enabled', '1', 'hire'); }
+        if (setting('hire.email')   === null) { setting_set('hire.email', '', 'hire'); }
+
+        // give the page a row of its own so its SEO fields are editable
+        // alongside every other page, rather than being a special case
+        $known = (int)q_val("SELECT COUNT(*) FROM pages WHERE slug = ?", [$slug]);
+        if ($known === 0) {
+            $next = (int)q_val("SELECT COALESCE(MAX(sort_order), 0) + 1 FROM pages");
+            q("INSERT INTO pages (slug,label,file,robots_index,robots_follow,schema_type,sort_order,updated_at)
+               VALUES (?,?,?,'index','follow','WebPage',?,?)",
+              [$slug, 'Trailer Hire', 'catering-trailer-hire.php', $next, date('c')]);
+        }
+    } catch (Throwable $e) {
+        error_log('CTNW hire seed failed: ' . $e->getMessage());
+    }
+}
+
+/**
+ * The FAQs the hire page ships with.
+ *
+ * Also used as the fallback when the database is unreachable, so the page and
+ * its FAQ schema always agree with each other.
+ *
+ * @return array<int, array{0:string,1:string}>
+ */
+function hire_faq_defaults(): array
+{
+    return [
+        ['How much does catering trailer hire cost?',
+         'Pricing depends on the size and specification of the trailer, hire duration, required equipment, delivery location and any additional requirements. Send us your requirements through the quote form and we will provide a tailored quotation.'],
+        ['Can I hire a catering trailer for one day?',
+         'One-day and event hire enquiries are welcome. Availability will depend on the trailer required, location and dates.'],
+        ['Can I hire a catering trailer for a festival?',
+         'Yes, catering trailers can be suitable for festivals, markets and outdoor events. Tell us your menu, expected customer numbers, power requirements and event dates so we can assess what is suitable.'],
+        ['Do catering trailers include equipment?',
+         'Equipment varies depending on the trailer and hire requirements. Tell us what equipment you need when requesting a quote.'],
+        ['Do you deliver catering trailers?',
+         'Delivery may be available depending on the location, trailer and hire arrangement. Include the delivery postcode with your enquiry.'],
+        ['Can I hire a mobile bar for a wedding?',
+         'Mobile bar hire enquiries are welcome for weddings and private events. Let us know the event date, location, expected guest numbers and the type of drinks service you plan to provide.'],
+        ['Can I hire a trailer for several weeks or months?',
+         'Longer-term hire enquiries are welcome and are quoted individually based on the trailer, duration and requirements.'],
+        ['Can I hire a trailer while mine is being repaired?',
+         'Potentially, depending on availability. Catering Trailers NW also provides trailer repairs and refurbishments, so mention your existing trailer when making your enquiry.'],
+        ['Should I hire or buy a catering trailer?',
+         'Hire can work well for temporary requirements, events or short-term use. If you plan to trade regularly, a bespoke new catering trailer designed around your own menu and equipment may be more suitable. We can provide quotations for both options.'],
+    ];
 }
 
 /* --------------------------------------------------------------- settings */

@@ -93,6 +93,11 @@ if ($viewId) {
             <p style="white-space:pre-wrap;margin:0"><?= e($enq['message']) ?></p>
           <?php endif; ?>
 
+          <?php if (trim((string)$enq['extra']) !== ''): ?>
+            <h3 style="margin-top:1.2rem">Everything else they told us</h3>
+            <p style="white-space:pre-wrap;margin:0"><?= e($enq['extra']) ?></p>
+          <?php endif; ?>
+
           <?php if ($files): ?>
             <h3 style="margin-top:1.2rem">Photos</h3>
             <p class="muted" style="font-size:.86rem">Stored out of public reach. Open from the file manager at <span class="mono">quote-uploads/</span>.</p>

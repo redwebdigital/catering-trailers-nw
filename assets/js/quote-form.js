@@ -8,7 +8,9 @@
 (function () {
   'use strict';
 
-  var form = document.getElementById('quoteForm');
+  // The multi-step quote form, or a single-page enquiry form such as the hire
+  // page. Everything below the step machinery is shared by both.
+  var form = document.getElementById('quoteForm') || document.getElementById('hireForm');
   if (!form) return;
 
   var steps   = Array.prototype.slice.call(form.querySelectorAll('.step'));
@@ -20,8 +22,12 @@
   var badNote = document.getElementById('formBad');
   var at = 0;
 
+  var hasSteps  = steps.length > 0 && prevBtn && nextBtn;
+  var sendLabel = sendBtn ? sendBtn.textContent : 'Send';
+
   /* ---------- step machinery --------------------------------------------- */
   function show(i) {
+    if (!hasSteps) return;
     at = Math.max(0, Math.min(steps.length - 1, i));
     steps.forEach(function (s, n) { s.classList.toggle('now', n === at); });
     marks.forEach(function (m, n) {
@@ -55,7 +61,8 @@
 
   function checkStep(i) {
     var ok = true;
-    var scope = steps[i];
+    // with no steps, the whole form is the scope
+    var scope = hasSteps ? steps[i] : form;
 
     scope.querySelectorAll('[required]').forEach(function (f) {
       var name = f.name.replace('[]', '');
@@ -88,17 +95,19 @@
     return ok;
   }
 
-  nextBtn.addEventListener('click', function () { if (checkStep(at)) show(at + 1); });
-  prevBtn.addEventListener('click', function () { show(at - 1); });
+  if (hasSteps) {
+    nextBtn.addEventListener('click', function () { if (checkStep(at)) show(at + 1); });
+    prevBtn.addEventListener('click', function () { show(at - 1); });
 
-  // Enter advances rather than submitting a half-filled form
-  form.addEventListener('keydown', function (e) {
-    if (e.key !== 'Enter') return;
-    if (e.target.tagName === 'TEXTAREA') return;
-    e.preventDefault();
-    if (at < steps.length - 1) { if (checkStep(at)) show(at + 1); }
-    else form.requestSubmit();
-  });
+    // Enter advances rather than submitting a half-filled form
+    form.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      if (e.target.tagName === 'TEXTAREA') return;
+      e.preventDefault();
+      if (at < steps.length - 1) { if (checkStep(at)) show(at + 1); }
+      else form.requestSubmit();
+    });
+  }
 
   /* ---------- photo picker ------------------------------------------------ */
   var input  = document.getElementById('photos');
@@ -196,7 +205,7 @@
         badNote.hidden = false;
         badNote.scrollIntoView({ behavior: 'smooth', block: 'center' });
         sendBtn.disabled = false;
-        sendBtn.textContent = 'Send my enquiry';
+        sendBtn.textContent = sendLabel;
       });
   });
 

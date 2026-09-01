@@ -27,6 +27,7 @@ $urls = [
     ['/new-catering-trailers',     '0.9', 'monthly', touched('new-catering-trailers.php')],
     ['/catering-trailer-repairs',  '0.9', 'monthly', touched('catering-trailer-repairs.php')],
     ['/refurbishments-upgrades',   '0.8', 'monthly', touched('refurbishments-upgrades.php')],
+    ['/catering-trailer-hire',     '0.8', 'monthly', touched('catering-trailer-hire.php')],
     ['/request-a-quote',           '0.9', 'monthly', touched('request-a-quote.php')],
     ['/gallery',                   '0.7', 'monthly', touched('gallery.php')],
     ['/about',                     '0.6', 'yearly',  touched('about.php')],
@@ -36,6 +37,17 @@ $urls = [
     ['/areas',                     '0.7', 'monthly', touched('areas/index.php')],
     ['/privacy',                   '0.2', 'yearly',  touched('privacy.php')],
 ];
+
+/* Anything switched off or set to noindex in the admin area is not a URL we
+   want crawlers spending their time on. */
+$urls = array_values(array_filter($urls, static function (array $u): bool {
+    if ($u[0] === '/catering-trailer-hire'
+        && db_ready() && (string)setting('hire.enabled', '1') === '0') {
+        return false;
+    }
+    $seo = page_seo($u[0]);
+    return ($seo['robots_index'] ?? 'index') !== 'noindex';
+}));
 
 foreach (array_keys($CFG['areas']) as $slug) {
     $urls[] = ['/areas/catering-trailers-' . $slug, '0.8', 'monthly',

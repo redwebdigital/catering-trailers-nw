@@ -7,6 +7,13 @@ $addressLine = trim($a['street'] . ', ' . $a['locality'] . ', ' . $a['postcode']
 ?>
 </main>
 
+<?php
+/* A page that ends with its own tailored call to action suppresses this one,
+   rather than closing with two competing asks stacked on top of each other. */
+$hideCta  = !empty($PAGE['hide_cta']);
+$noPhone  = !empty($PAGE['no_phone']);
+?>
+<?php if (!$hideCta): ?>
 <section class="cta band" aria-labelledby="cta-h">
   <div class="wrap cta__in rise">
     <p class="kicker" style="justify-content:center">Tell us what you need</p>
@@ -25,6 +32,7 @@ $addressLine = trim($a['street'] . ', ' . $a['locality'] . ', ' . $a['postcode']
     </div>
   </div>
 </section>
+<?php endif; ?>
 
 <footer class="foot">
   <div class="wrap">
@@ -126,7 +134,8 @@ $addressLine = trim($a['street'] . ', ' . $a['locality'] . ', ' . $a['postcode']
 </footer>
 
 <!-- sticky mobile call to action -->
-<div class="sticky" id="sticky" aria-label="Quick contact">
+<div class="sticky<?= $noPhone ? ' sticky--quote' : '' ?>" id="sticky" aria-label="Quick contact">
+  <?php if (!$noPhone): ?>
   <a class="s-call" href="<?= e(tel_href()) ?>" data-track="call-sticky">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11.4 11.4 0 0 0 3.6.58 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .57 3.6 1 1 0 0 1-.25 1z"/></svg>
     Call
@@ -135,7 +144,8 @@ $addressLine = trim($a['street'] . ', ' . $a['locality'] . ', ' . $a['postcode']
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2m5.1 14.1c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.5-2.6-1.1-4.3-3.7-4.4-3.9s-1-1.4-1-2.7.6-1.9.9-2.1c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.3 0 .5l-.3.4-.3.3c-.1.1-.3.3-.1.6s.6 1 1.3 1.6c.9.8 1.6 1 1.9 1.2s.4.1.6-.1l.8-1c.2-.2.3-.2.6-.1l2 .9c.2.1.4.2.4.3s0 .7-.2 1.3"/></svg>
     WhatsApp
   </a>
-  <a class="s-quote" href="/request-a-quote">Get a Quote</a>
+  <?php endif; ?>
+  <a class="s-quote" href="<?= e($PAGE['cta_href'] ?? '/request-a-quote') ?>"><?= e($PAGE['sticky_label'] ?? 'Get a Quote') ?></a>
 </div>
 
 <?php if ($gtm = setting('track.gtm')): ?>

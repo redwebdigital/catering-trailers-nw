@@ -65,16 +65,29 @@ $jsonld = json_encode(
     JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
 );
 
+// A page may ask for no telephone call to action anywhere in the chrome, so a
+// page whose whole job is to collect a written enquiry is not undercut by a
+// "Call us" button sitting above it.
+$NO_PHONE = !empty($PAGE['no_phone']);
+
 $NAV = [
     'new'      => ['/new-catering-trailers',     'New Trailers'],
     'repairs'  => ['/catering-trailer-repairs',  'Repairs'],
     'refurb'   => ['/refurbishments-upgrades',   'Refurbishments'],
+    'hire'     => ['/catering-trailer-hire',     'Hire'],
     'gallery'  => ['/gallery',                   'Our Builds'],
+
     'about'    => ['/about',                     'About'],
     'faqs'     => ['/faqs',                      'FAQs'],
     'blog'     => ['/blog',                      'Blog'],
     'contact'  => ['/contact',                   'Contact'],
 ];
+
+/* Hire is optional. Switched off in the admin area, it leaves the menu too,
+   rather than advertising a page that answers "not found". */
+if (db_ready() && (string)setting('hire.enabled', '1') === '0') {
+    unset($NAV['hire']);
+}
 ?>
 <!doctype html>
 <html lang="en-GB">
@@ -166,11 +179,13 @@ fbq('init','<?= e((string)$px) ?>');fbq('track','PageView');</script>
     </nav>
 
     <div class="masthead__cta">
+      <?php if (!$NO_PHONE): ?>
       <a class="tel" href="<?= e(tel_href()) ?>" data-track="call-header">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11.4 11.4 0 0 0 3.6.58 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .57 3.6 1 1 0 0 1-.25 1z"/></svg>
         <span><?= e($CFG['phone_display']) ?></span>
       </a>
-      <a class="btn btn--accent" href="/request-a-quote">Request a Quote</a>
+      <?php endif; ?>
+      <a class="btn btn--accent" href="<?= e($PAGE['cta_href'] ?? '/request-a-quote') ?>">Request a Quote</a>
     </div>
 
     <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="nav">
@@ -182,3 +197,21 @@ fbq('init','<?= e((string)$px) ?>');fbq('track','PageView');</script>
 </header>
 
 <main id="main" tabindex="-1">
+<?php if (!empty($PAGE['crumbs'])): ?>
+<nav class="crumbs" aria-label="Breadcrumb">
+  <div class="wrap">
+    <ol>
+      <?php $lastCrumb = array_key_last($PAGE['crumbs']); ?>
+      <?php foreach ($PAGE['crumbs'] as $label => $href): ?>
+        <li>
+          <?php if ($label === $lastCrumb): ?>
+            <span aria-current="page"><?= e($label) ?></span>
+          <?php else: ?>
+            <a href="<?= e($href) ?>"><?= e($label) ?></a>
+          <?php endif; ?>
+        </li>
+      <?php endforeach; ?>
+    </ol>
+  </div>
+</nav>
+<?php endif; ?>
