@@ -44,6 +44,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     respond(false, 'Method not allowed', 405);
 }
 
+/* No forms are reachable while the holding page is up, so anything arriving
+   here is stale or automated. Refuse it rather than fill the inbox. */
+require_once __DIR__ . '/inc/coming-soon.php';
+if (coming_soon_on() && !coming_soon_preview()) {
+    respond(false, 'The website is temporarily unavailable.', 503);
+}
+
 // ── bot filters ──────────────────────────────────────────────────────────
 if (trim((string)($_POST['company_website'] ?? '')) !== '') {
     respond(true);                       // honeypot: look successful, send nothing

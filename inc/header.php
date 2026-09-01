@@ -18,6 +18,12 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
 
+/* Holding page, if the owner has switched it on. Sits here rather than in
+   bootstrap so it can only ever affect public pages: the admin area has its
+   own head and never reaches this line. */
+require_once __DIR__ . '/coming-soon.php';
+coming_soon_gate();
+
 $PAGE = ($PAGE ?? []) + [
     'title'       => $CFG['name'],
     'description' => '',

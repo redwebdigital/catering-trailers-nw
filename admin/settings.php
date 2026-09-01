@@ -28,7 +28,20 @@ if (($_POST['do'] ?? '') === 'password') {
     header('Location: /admin/settings.php'); exit;
 }
 
+require_once dirname(__DIR__) . '/inc/coming-soon.php';
+
 $fields = [
+  '_h0' => ['label' => 'Coming soon page', 'type' => 'heading',
+            'hint' => 'Replaces the whole public website with a holding page carrying your logo. The admin area stays open, so you cannot lock yourself out.'],
+  'site.coming_soon' => ['label' => 'Show the coming soon page instead of the website', 'type' => 'checkbox',
+      'hint' => 'Visitors see the holding page. Search engines are told the site is temporarily away, so your existing pages are held rather than replaced.'],
+  'site.cs_heading' => ['label' => 'Holding page heading', 'type' => 'text', 'count' => 60,
+      'default' => 'Something new is on the way'],
+  'site.cs_message' => ['label' => 'Holding page message', 'type' => 'textarea', 'rows' => 3, 'count' => 220,
+      'default' => 'Our website is being updated. We are still building, repairing and refurbishing catering trailers in the meantime, so please do get in touch.'],
+  'site.cs_show_contact' => ['label' => 'Show email and phone on the holding page', 'type' => 'checkbox',
+      'hint' => 'Taken from Business Details, so there is nothing to keep in step.'],
+
   '_h1' => ['label' => 'Search defaults', 'type' => 'heading',
             'hint' => 'Used on any page that has not been given its own wording under Pages & SEO.'],
   'seo.title_suffix' => ['label' => 'Title suffix', 'type' => 'text',
@@ -59,12 +72,32 @@ $counts = [
   'media'     => (int)q_val("SELECT COUNT(*) FROM media"),
   'options'   => (int)q_val("SELECT COUNT(*) FROM builder_options"),
 ];
+$csOn      = coming_soon_on();
+$previewUrl = rtrim((string)$CFG['base_url'], '/') . '/?preview=' . coming_soon_key();
 ?>
+
+<?php if ($csOn): ?>
+  <div class="note note--warn">
+    <strong>The public website is switched off.</strong> Everyone visiting
+    <?= e($CFG['domain'] ?? 'the site') ?> sees the coming soon page. Untick the box below to
+    put it back.
+    <br><br>
+    To check the real site while it is off, open this link once and your browser is let
+    through for 24 hours:<br>
+    <a class="mono" style="word-break:break-all" href="<?= e($previewUrl) ?>" target="_blank" rel="noopener"><?= e($previewUrl) ?></a>
+  </div>
+<?php endif; ?>
 
 <form method="post" data-warn>
   <?= csrf_field() ?>
   <div class="card">
     <?php render_fields($fields); ?>
+    <?php if (!$csOn): ?>
+      <p class="card__hint" style="margin-top:.4rem">
+        Preview link, for checking the site while the holding page is up:
+        <a class="mono" style="word-break:break-all" href="<?= e($previewUrl) ?>" target="_blank" rel="noopener"><?= e($previewUrl) ?></a>
+      </p>
+    <?php endif; ?>
     <?php save_bar(); ?>
   </div>
 </form>

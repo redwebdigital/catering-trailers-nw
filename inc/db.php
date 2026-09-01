@@ -356,6 +356,30 @@ function seed_hire(): void
 }
 
 /**
+ * Site-wide switches that need a starting value.
+ *
+ * Only fills a setting that has never been written, so a deploy can never flip
+ * something the owner has chosen — least of all the holding page.
+ */
+function seed_site_defaults(): void
+{
+    try {
+        $defaults = [
+            'site.coming_soon'     => '0',
+            'site.cs_heading'      => 'Something new is on the way',
+            'site.cs_message'      => 'Our website is being updated. We are still building, repairing and refurbishing catering trailers in the meantime, so please do get in touch.',
+            'site.cs_show_contact' => '1',
+        ];
+        foreach ($defaults as $k => $v) {
+            if (setting($k) === null) { setting_set($k, $v, 'site'); }
+        }
+        settings_all(true);
+    } catch (Throwable $e) {
+        error_log('CTNW site defaults seed failed: ' . $e->getMessage());
+    }
+}
+
+/**
  * Fill in the SEO fields for every page.
  *
  * Only ever writes to a column that is still empty, so the moment the owner
