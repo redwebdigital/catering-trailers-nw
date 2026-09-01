@@ -379,6 +379,45 @@ function seed_pages_seo(): void
             settings_all(true);
         }
 
+        /* Copy that was seeded at install and has not been touched since is
+           brought up to the current wording. Matching on the exact old value
+           means anything the owner has rewritten is left alone. */
+        $rewrites = [
+            'content.hero_heading' => [
+                'Bespoke Catering Trailers Built in the North West',
+                'Bespoke Catering Trailers Built for Your Business',
+            ],
+            'content.hero_sub' => [
+                'Built to your menu, not off a shelf. New builds, repairs and refits for street food traders, burger vans and coffee trailers.',
+                'Professional catering trailers designed around your menu, equipment and working layout. Whether you are starting a new mobile food business, replacing an older unit or expanding an existing operation, we can help you create a trailer designed around the way you actually work.',
+            ],
+            'content.builder_heading' => [
+                'From your menu to your pitch',
+                'From Your Menu to Your Pitch',
+            ],
+        ];
+        $touched = false;
+        foreach ($rewrites as $key => [$old, $new]) {
+            if (trim((string)setting($key, '')) === $old) {
+                setting_set($key, $new, 'content');
+                $touched = true;
+            }
+        }
+        if ($touched) { settings_all(true); }
+
+        /* The five build stages, same rule: only replaced while they still
+           carry the titles they were installed with. */
+        $stages = [
+            'We take your spec'          => ['Your Requirements',      'Tell us about your menu, equipment, pitch, trailer size and how you intend to use the trailer.'],
+            'Drawings and a fixed price' => ['Layout & Specification', 'We develop the proposed trailer specification and layout around your requirements.'],
+            'Chassis and shell'          => ['Chassis & Shell',        'The chassis, body, hatch and door openings are prepared to suit the agreed build.'],
+            'Fit-out, gas and electrics' => ['Fit-Out',                'Work surfaces, equipment, gas, electrics, water systems and other internal features are installed as required.'],
+            'Handover'                   => ['Handover',               'Once the trailer is complete, the finished build is checked and prepared for handover.'],
+        ];
+        foreach ($stages as $old => [$title, $body]) {
+            q("UPDATE builder_stages SET title = ?, body = ? WHERE title = ?", [$title, $body, $old]);
+        }
+
         foreach ($data as $slug => $v) {
             $row = q_one("SELECT * FROM pages WHERE slug = ?", [$slug]);
 
