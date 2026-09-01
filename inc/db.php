@@ -374,18 +374,6 @@ function seed_site_defaults(): void
             if (setting($k) === null) { setting_set($k, $v, 'site'); }
         }
 
-        /* The install seeded an invented phone number. Clear it, but only while
-           it is still that exact placeholder, so a real number entered under
-           Business Details is never touched. With it blank, every call button
-           on the site disappears rather than dialling nothing. */
-        $placeholders = [
-            'biz.phone_display' => '01925 000 000',
-            'biz.phone_e164'    => '+441925000000',
-        ];
-        foreach ($placeholders as $k => $fake) {
-            if (trim((string)setting($k, '')) === $fake) { setting_set($k, '', 'biz'); }
-        }
-
         settings_all(true);
     } catch (Throwable $e) {
         error_log('CTNW site defaults seed failed: ' . $e->getMessage());
